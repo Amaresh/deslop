@@ -5,7 +5,7 @@ from pathlib import Path
 
 PACK_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = PACK_ROOT / "scripts"
-ENGINE_SRC = PACK_ROOT.parent / "isolated-engineering-rules" / "src"
+ENGINE_SRC = PACK_ROOT / "src"
 
 
 def _prefer(path: Path) -> None:

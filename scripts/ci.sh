@@ -23,13 +23,10 @@ REPO_ROOT="$(cd "${1:-.}" && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FORMAT="${FORMAT:-text}"
-DEFAULT_PYTHON="$PACK_ROOT/../isolated-engineering-rules/.venv/bin/python"
 ENGINE_PYTHON="${ENGINE_PYTHON:-}"
 
 if [[ -z "$ENGINE_PYTHON" ]]; then
-  if [[ -x "$DEFAULT_PYTHON" ]]; then
-    ENGINE_PYTHON="$DEFAULT_PYTHON"
-  elif command -v python3 >/dev/null 2>&1; then
+  if command -v python3 >/dev/null 2>&1; then
     ENGINE_PYTHON="$(command -v python3)"
   else
     echo "ci.sh: no python interpreter (set ENGINE_PYTHON)" >&2

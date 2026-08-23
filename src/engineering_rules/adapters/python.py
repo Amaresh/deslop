@@ -120,7 +120,6 @@ _UNHANDLED_IDEMPOTENT_DUPLICATE_RULE_ID = (
     "python.reliability.no-unhandled-idempotent-duplicate-api-response"
 )
 _TELEGRAM_POLLING_PATTERN = re.compile(r"\b(?:start_polling|getUpdates)\s*\(")
-_APPLICATION_BUILDER_PATTERN = re.compile(r"\bApplicationBuilder\s*\(")
 _GET_UPDATES_READ_TIMEOUT_PATTERN = re.compile(r"\bget_updates_read_timeout\s*\(")
 _RAISE_FOR_STATUS_PATTERN = re.compile(r"\.raise_for_status\s*\(")
 _DUPLICATE_ERROR_CODE_CONSTANT_PATTERN = re.compile(
@@ -143,7 +142,6 @@ _PYTHON_RUNTIME_MODULE_TEST_LINE_THRESHOLD = 350
 _TEMPLATE_CATALOG_NAME_MARKERS = frozenset(
     {"catalog", "message", "messages", "status", "template", "templates"}
 )
-_PREFERRED_ADAPTER_TEST_PREFIXES = ("tests/test_", "tests/")
 _PUBLIC_DTO_PATH_MARKERS = frozenset({"dto", "model", "models", "request", "response", "schema"})
 _SKIP_DIRECTORIES = frozenset(
     {
@@ -221,19 +219,6 @@ _INGRESS_NORMALIZATION_CONTEXT_KEYS = frozenset(
     }
 )
 _INGRESS_NORMALIZATION_HELPER_MARKERS = frozenset({"normalize", "canonical", "coerce"})
-_CONTRACT_SURFACE_DIRECTORY_MARKERS = frozenset({"contract", "contracts", "schema", "schemas"})
-_CONTRACT_SURFACE_STEM_MARKERS = frozenset({"contract", "contracts", "schema", "schemas"})
-_CONTRACT_SURFACE_EXACT_STEMS = frozenset({"sidecar_eval_gates"})
-_CONTRACT_TEST_MARKERS = frozenset(
-    {"canary", "canaries", "contract", "contracts", "eval", "gates", "schema", "snapshot"}
-)
-_DEPLOY_ENV_DIRECTORY_MARKERS = frozenset({"config", "configs", "deploy", "deployment", "tenancy"})
-_DEPLOY_ENV_STEM_MARKERS = frozenset(
-    {"config", "health", "readiness", "registry", "settings", "sla", "snapshot", "tenant"}
-)
-_DEPLOY_ENV_TEST_MARKERS = frozenset(
-    {"config", "contract", "deploy", "env", "health", "readiness", "snapshot", "tenant"}
-)
 _ROUTE_DECORATOR_NAMES = frozenset(
     {"api_route", "delete", "get", "head", "options", "patch", "post", "put", "websocket"}
 )
@@ -345,41 +330,6 @@ _ASYNC_TASK_LAUNCH_CALL_NAMES = frozenset(
 _ASYNC_TASK_MANAGEMENT_CALL_NAMES = frozenset(
     {"asyncio.gather", "asyncio.shield", "asyncio.wait", "asyncio.wait_for"}
 )
-_TENANT_SCOPE_MARKERS = frozenset(
-    {
-        "org",
-        "orgs",
-        "organization",
-        "organizations",
-        "project",
-        "projects",
-        "tenant",
-        "tenants",
-        "workspace",
-        "workspaces",
-    }
-)
-_USER_SCOPED_RUNTIME_STORE_SCOPE_MARKERS = frozenset(
-    {
-        "confirmation",
-        "continuity",
-        "orchestration",
-        "orchestrations",
-        "orchestrator",
-        "orchestrators",
-        "router",
-        "routers",
-        "runtime",
-        "session",
-        "sessions",
-    }
-)
-_USER_SCOPED_RUNTIME_STORE_CONTAINER_MARKERS = frozenset({"cache", "store"})
-_USER_SCOPED_RUNTIME_STORE_CONTEXT_MARKERS = frozenset(
-    {"confirmation", "continuity", "runtime", "session", "sessions"}
-)
-_USER_SCOPED_RUNTIME_STORE_KEY_MARKERS = ("user", "owner", "channel", "session")
-_USER_SCOPED_RUNTIME_STORE_ACCESS_METHODS = frozenset({"get", "pop", "setdefault"})
 _DAEMON_TASK_CONTEXT_MARKERS = frozenset(
     {
         "background",
@@ -432,9 +382,6 @@ _URL_CONTEXT_MARKERS = frozenset(
 )
 _DOMAIN_CONTEXT_MARKERS = frozenset({"domain", "host", "public_host", "public_domain"})
 _DATABASE_CONTEXT_MARKERS = frozenset({"database", "database_name", "db_name", "dbname"})
-_IDENTIFIER_CONTEXT_MARKERS = frozenset(
-    {"channel", "provider", "integration", "integration_type", "owner_role"}
-)
 _EXCEPTION_DETAIL_ATTRIBUTE_NAMES = frozenset({"detail", "message"})
 _SQL_LOCAL_NAME_MARKERS = frozenset({"query", "sql", "statement", "stmt"})
 _PYTHON_LOG_METHODS = frozenset(
@@ -473,15 +420,10 @@ _WEBHOOK_VERIFY_MARKERS = frozenset(
 _ORIGIN_VALIDATE_MARKERS = frozenset(
     {"ipaddress", "is_global", "ip_address", "validate_origin", "check_origin"}
 )
-_EXTERNAL_CHANNEL_NAMES = frozenset({"whatsapp", "instagram", "web", "customer", "external"})
-_CHAIN_CONFIRMATION_MARKERS = frozenset({"chain", "confirmation", "confirm", "multi_step"})
-_COMMERCE_PRICE_MARKERS = frozenset({"₹", "INR", "price", "MRP"})
-_PAYROLL_MARKERS = frozenset({"salary", "payroll", "employee directory"})
 _WEBHOOK_HANDLER_PATH_MARKERS = frozenset({"webhook", "webhooks"})
 _WEBHOOK_SECRET_GLOBAL_MARKERS = frozenset({"WEBHOOK_SECRET", "SHARED_SECRET", "GLOBAL_SECRET"})
 _LIFESPAN_DECORATOR_NAMES = frozenset({"asynccontextmanager", "contextlib.asynccontextmanager"})
 _WEBSOCKET_ROUTE_MARKERS = frozenset({"websocket", "ws"})
-_RETRY_LOOP_MARKERS = frozenset({"retry", "retries", "attempt", "attempts"})
 _RUNTIME_EXCLUDED_PATH_MARKERS = frozenset(
     {
         "benchmarks",
@@ -710,14 +652,6 @@ class _TaskExceptionSinkMatch:
     symbol: str | None
 
 
-@dataclass(frozen=True)
-class _UserScopedRuntimeStoreMatch:
-    node: ast.AST
-    access_pattern: str
-    store_name: str
-    key_name: str | None
-    key_kind: str
-    symbol: str | None
 
 
 @dataclass(frozen=True)
@@ -853,11 +787,6 @@ class _DbSslmodeMatch:
     literal_value: str
 
 
-@dataclass(frozen=True)
-class _ChainConfirmationMatch:
-    node: ast.AST
-    access_pattern: str
-    symbol: str | None
 
 
 @dataclass(frozen=True)
@@ -866,18 +795,8 @@ class _ContextManagerExitMatch:
     symbol: str | None
 
 
-@dataclass(frozen=True)
-class _CommercePriceLeakMatch:
-    node: ast.AST
-    literal_value: str
-    symbol: str | None
 
 
-@dataclass(frozen=True)
-class _PayrollLeakMatch:
-    node: ast.AST
-    literal_value: str
-    symbol: str | None
 
 
 @dataclass(frozen=True)
@@ -900,11 +819,6 @@ class _OrphanedAsyncTaskMatch:
     symbol: str | None
 
 
-@dataclass(frozen=True)
-class _RetryCounterMatch:
-    node: ast.AST
-    access_pattern: str
-    symbol: str | None
 
 
 class _BlockingCallVisitor(ast.NodeVisitor):
@@ -2329,45 +2243,6 @@ class PythonAdapter(RulesAdapter):
             )
         return findings
 
-    def _find_user_scoped_runtime_store_findings(
-        self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
-    ) -> list[NormalizedFinding]:
-        findings: list[NormalizedFinding] = []
-        for match in _iter_user_scoped_runtime_store_matches(parsed_file):
-            if not _lines_intersect(parsed_file.changed_lines, _node_line_range(match.node)):
-                continue
-            findings.append(
-                NormalizedFinding.from_rule(
-                    rule,
-                    message=(
-                        "Python tenant-aware runtime/session store "
-                        f"'{match.store_name}' indexes by {match.key_kind} "
-                        f"'{match.key_name or '<key>'}' without tenant/org/workspace/project "
-                        "scoping."
-                    ),
-                    location=FindingLocation(
-                        path=parsed_file.relative_path,
-                        line=match.node.lineno,
-                        column=match.node.col_offset + 1,
-                        end_line=getattr(match.node, "end_lineno", None),
-                        end_column=_normalized_node_end_column(match.node),
-                    ),
-                    adapter_id=self.adapter_key,
-                    language=RepoLanguage.PYTHON,
-                    suggestion=(
-                        "Scope runtime/session stores by tenant/org/workspace/project before "
-                        "indexing them by user, owner, channel, or session ids."
-                    ),
-                    metadata={
-                        "access_pattern": match.access_pattern,
-                        "key_kind": match.key_kind,
-                        "key_name": match.key_name or "<dynamic>",
-                        "store_name": match.store_name,
-                        "symbol": match.symbol or "<callable>",
-                    },
-                )
-            )
-        return findings
 
     def _find_daemon_task_without_failure_sink_findings(
         self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
@@ -3264,40 +3139,6 @@ class PythonAdapter(RulesAdapter):
             )
         return findings
 
-    def _find_chain_confirmation_external_findings(
-        self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
-    ) -> list[NormalizedFinding]:
-        findings: list[NormalizedFinding] = []
-        for match in _iter_chain_confirmation_external_matches(parsed_file):
-            if not _lines_intersect(parsed_file.changed_lines, _node_line_range(match.node)):
-                continue
-            findings.append(
-                NormalizedFinding.from_rule(
-                    rule,
-                    message=(
-                        "Multi-step chain confirmation flow is triggered from an external "
-                        f"customer channel ('{match.access_pattern}')."
-                    ),
-                    location=FindingLocation(
-                        path=parsed_file.relative_path,
-                        line=getattr(match.node, "lineno", 1),
-                        column=getattr(match.node, "col_offset", 0) + 1,
-                        end_line=getattr(match.node, "end_lineno", None),
-                        end_column=_normalized_node_end_column(match.node),
-                    ),
-                    adapter_id=self.adapter_key,
-                    language=RepoLanguage.PYTHON,
-                    suggestion=(
-                        "Move chain confirmation flows to internal channels or add "
-                        "strict gating before exposing them on external channels."
-                    ),
-                    metadata={
-                        "access_pattern": match.access_pattern,
-                        "symbol": match.symbol or "<route>",
-                    },
-                )
-            )
-        return findings
 
     def _find_context_manager_exit_findings(
         self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
@@ -3333,75 +3174,7 @@ class PythonAdapter(RulesAdapter):
             )
         return findings
 
-    def _find_commerce_price_leak_findings(
-        self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
-    ) -> list[NormalizedFinding]:
-        findings: list[NormalizedFinding] = []
-        for match in _iter_commerce_price_leak_matches(parsed_file):
-            if not _line_in_scope(parsed_file.changed_lines, getattr(match.node, "lineno", 1)):
-                continue
-            findings.append(
-                NormalizedFinding.from_rule(
-                    rule,
-                    message=(
-                        "Commerce price language detected in customer-facing output "
-                        f"('{match.literal_value}')."
-                    ),
-                    location=FindingLocation(
-                        path=parsed_file.relative_path,
-                        line=getattr(match.node, "lineno", 1),
-                        column=getattr(match.node, "col_offset", 0) + 1,
-                        end_line=getattr(match.node, "end_lineno", None),
-                        end_column=_normalized_node_end_column(match.node),
-                    ),
-                    adapter_id=self.adapter_key,
-                    language=RepoLanguage.PYTHON,
-                    suggestion=(
-                        "Remove or mask pricing tokens before sending LLM output to "
-                        "customer channels."
-                    ),
-                    metadata={
-                        "literal_value": match.literal_value,
-                        "symbol": match.symbol or "<route>",
-                    },
-                )
-            )
-        return findings
 
-    def _find_employee_payroll_leak_findings(
-        self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
-    ) -> list[NormalizedFinding]:
-        findings: list[NormalizedFinding] = []
-        for match in _iter_employee_payroll_leak_matches(parsed_file):
-            if not _line_in_scope(parsed_file.changed_lines, getattr(match.node, "lineno", 1)):
-                continue
-            findings.append(
-                NormalizedFinding.from_rule(
-                    rule,
-                    message=(
-                        "Payroll or employee directory language detected in customer-facing "
-                        f"output ('{match.literal_value}')."
-                    ),
-                    location=FindingLocation(
-                        path=parsed_file.relative_path,
-                        line=getattr(match.node, "lineno", 1),
-                        column=getattr(match.node, "col_offset", 0) + 1,
-                        end_line=getattr(match.node, "end_lineno", None),
-                        end_column=_normalized_node_end_column(match.node),
-                    ),
-                    adapter_id=self.adapter_key,
-                    language=RepoLanguage.PYTHON,
-                    suggestion=(
-                        "Remove or mask payroll and employee data before sending LLM "
-                        "output to customer channels."
-                    ),
-                    metadata={
-                        "literal_value": match.literal_value,
-                        "symbol": match.symbol or "<route>",
-                    },
-                )
-            )
-        return findings
 
     def _find_tenant_shared_webhook_secret_findings(
         self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
@@ -3506,40 +3279,6 @@ class PythonAdapter(RulesAdapter):
             )
         return findings
 
-    def _find_retry_counter_findings(
-        self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
-    ) -> list[NormalizedFinding]:
-        findings: list[NormalizedFinding] = []
-        for match in _iter_retry_counter_matches(parsed_file):
-            if not _lines_intersect(parsed_file.changed_lines, _node_line_range(match.node)):
-                continue
-            findings.append(
-                NormalizedFinding.from_rule(
-                    rule,
-                    message=(
-                        "Retry logic checks a single reference without aggregating all "
-                        f"candidates ('{match.access_pattern}')."
-                    ),
-                    location=FindingLocation(
-                        path=parsed_file.relative_path,
-                        line=getattr(match.node, "lineno", 1),
-                        column=getattr(match.node, "col_offset", 0) + 1,
-                        end_line=getattr(match.node, "end_lineno", None),
-                        end_column=_normalized_node_end_column(match.node),
-                    ),
-                    adapter_id=self.adapter_key,
-                    language=RepoLanguage.PYTHON,
-                    suggestion=(
-                        "Aggregate all retry candidates and select the highest attempt "
-                        "number instead of relying on a single reference."
-                    ),
-                    metadata={
-                        "access_pattern": match.access_pattern,
-                        "symbol": match.symbol or "<module>",
-                    },
-                )
-            )
-        return findings
 
     def _find_long_poll_read_timeout_findings(
         self, parsed_file: _ParsedPythonFile, rule: RuleDefinition
@@ -3708,41 +3447,12 @@ def _looks_like_template_catalog_literal(node: ast.expr) -> bool:
     return True
 
 
-def _is_adapter_behavior_module_path(relative_path: str) -> bool:
-    path = Path(relative_path)
-    markers = _python_path_markers(relative_path)
-    return "adapter" in markers or path.stem.lower().endswith("adapters")
 
 
-def _module_has_adapter_behavior_surface(module: ast.Module) -> bool:
-    for node in module.body:
-        if isinstance(node, ast.ClassDef) and node.name.endswith("Adapter"):
-            return True
-    return False
 
 
-def _preferred_adapter_test_path(relative_path: str) -> str:
-    path = Path(relative_path)
-    parent_tokens = [
-        part.lower() for part in path.parts[:-1] if part.lower() not in {"src", "__init__"}
-    ]
-    stem = path.stem.lower()
-    base_name = "_".join(token for token in (*parent_tokens[-1:], stem) if token)
-    return f"tests/test_{base_name}.py"
 
 
-def _has_behavior_parity_test(
-    relative_path: str, *, discovered_python_test_paths: frozenset[str]
-) -> bool:
-    preferred_path = _preferred_adapter_test_path(relative_path)
-    if preferred_path in discovered_python_test_paths:
-        return True
-    path_tokens = _python_path_markers(relative_path)
-    for test_path in discovered_python_test_paths:
-        test_tokens = _python_path_markers(test_path)
-        if "adapter" in test_tokens and len(path_tokens & test_tokens) >= 2:
-            return True
-    return False
 
 
 def _iter_outbound_html_or_url_sanitization_matches(
@@ -4298,52 +4008,8 @@ def _python_expr_mentions_name(node: ast.AST | None, name: str) -> bool:
     return any(isinstance(child, ast.Name) and child.id == name for child in ast.walk(node))
 
 
-def _python_user_scoped_runtime_store_match_from_subscript(
-    *, node: ast.Subscript, symbol: str
-) -> _UserScopedRuntimeStoreMatch | None:
-    store_name = _python_access_path(node.value)
-    if store_name is None or not _looks_like_python_user_scoped_runtime_store_name(store_name):
-        return None
-    key_kind = _python_user_scoped_store_key_kind(node.slice)
-    if key_kind is None:
-        return None
-    key_name = _python_expr_simple_label(node.slice)
-    access_pattern = f"{store_name}[{key_name or '<key>'}]"
-    return _UserScopedRuntimeStoreMatch(
-        node=node,
-        access_pattern=access_pattern,
-        store_name=store_name,
-        key_name=key_name,
-        key_kind=key_kind,
-        symbol=symbol,
-    )
 
 
-def _python_user_scoped_runtime_store_match_from_call(
-    *, node: ast.Call, symbol: str
-) -> _UserScopedRuntimeStoreMatch | None:
-    if (
-        not isinstance(node.func, ast.Attribute)
-        or node.func.attr not in _USER_SCOPED_RUNTIME_STORE_ACCESS_METHODS
-    ):
-        return None
-    store_name = _python_access_path(node.func.value)
-    if store_name is None or not _looks_like_python_user_scoped_runtime_store_name(store_name):
-        return None
-    key_node = node.args[0] if node.args else None
-    if key_node is None:
-        return None
-    key_kind = _python_user_scoped_store_key_kind(key_node)
-    if key_kind is None:
-        return None
-    return _UserScopedRuntimeStoreMatch(
-        node=node,
-        access_pattern=f"{store_name}.{node.func.attr}",
-        store_name=store_name,
-        key_name=_python_expr_simple_label(key_node),
-        key_kind=key_kind,
-        symbol=symbol,
-    )
 
 
 def _python_daemon_task_ownership(
@@ -4633,40 +4299,6 @@ def _iter_service_layer_task_exception_sink_matches(
     yield from _iter_python_task_exception_sink_matches(parsed_file)
 
 
-def _iter_user_scoped_runtime_store_matches(
-    parsed_file: _ParsedPythonFile,
-) -> Iterator[_UserScopedRuntimeStoreMatch]:
-    if not _is_runtime_python_path(parsed_file.relative_path):
-        return
-    for callable_node, container_name in _iter_runtime_callables(parsed_file.module):
-        context_tokens = _python_runtime_callable_context_tokens(
-            parsed_file.relative_path,
-            callable_name=callable_node.name,
-            container_name=container_name,
-        )
-        if not context_tokens & _USER_SCOPED_RUNTIME_STORE_SCOPE_MARKERS:
-            continue
-        scope_tokens = context_tokens | _python_scope_identifier_tokens(callable_node)
-        if not scope_tokens & _TENANT_SCOPE_MARKERS:
-            continue
-        parent_map = _python_parent_map(callable_node)
-        for node in ast.walk(callable_node):
-            if _is_python_nested_scope_node(node, callable_node, parent_map):
-                continue
-            if isinstance(node, ast.Subscript):
-                match = _python_user_scoped_runtime_store_match_from_subscript(
-                    node=node,
-                    symbol=callable_node.name,
-                )
-            elif isinstance(node, ast.Call):
-                match = _python_user_scoped_runtime_store_match_from_call(
-                    node=node,
-                    symbol=callable_node.name,
-                )
-            else:
-                continue
-            if match is not None:
-                yield match
 
 
 def _iter_python_detached_async_matches(
@@ -6941,12 +6573,6 @@ def _python_ast_identifier_tokens(
     return frozenset(tokens)
 
 
-def _python_scope_identifier_tokens(
-    node: ast.FunctionDef | ast.AsyncFunctionDef,
-) -> frozenset[str]:
-    return _split_python_identifier_tokens(node.name) | _python_ast_identifier_tokens(
-        node, skip_nested_scopes=True
-    )
 
 
 def _python_runtime_callable_context_tokens(
@@ -6978,22 +6604,8 @@ def _python_ast_equivalent(left: ast.AST | None, right: ast.AST | None) -> bool:
     return ast.dump(left, include_attributes=False) == ast.dump(right, include_attributes=False)
 
 
-def _looks_like_python_user_scoped_runtime_store_name(name: str) -> bool:
-    tokens = _split_python_identifier_tokens(name)
-    return bool(
-        tokens & _USER_SCOPED_RUNTIME_STORE_CONTAINER_MARKERS
-        and tokens & _USER_SCOPED_RUNTIME_STORE_CONTEXT_MARKERS
-    )
 
 
-def _python_user_scoped_store_key_kind(node: ast.expr) -> str | None:
-    tokens = _python_ast_identifier_tokens(node)
-    if not tokens or tokens & _TENANT_SCOPE_MARKERS:
-        return None
-    key_marker = _python_first_matching_token(tokens, _USER_SCOPED_RUNTIME_STORE_KEY_MARKERS)
-    if key_marker is None:
-        return None
-    return f"{key_marker}-id"
 
 
 def _looks_like_secret_env_name(name: str) -> bool:
@@ -7804,43 +7416,14 @@ def _python_node_max_control_nesting(node: ast.AST, *, depth: int) -> int:
     return depth
 
 
-def _changed_python_test_paths(changed_files: Sequence[str]) -> frozenset[str]:
-    normalized_paths: set[str] = set()
-    for changed_file in changed_files:
-        normalized = changed_file.replace("\\", "/")
-        if not normalized.endswith(".py"):
-            continue
-        file_name = Path(normalized).name
-        if (
-            normalized.startswith("tests/")
-            or "/tests/" in normalized
-            or file_name.startswith("test_")
-            or file_name.endswith("_test.py")
-        ):
-            normalized_paths.add(normalized)
-    return frozenset(normalized_paths)
 
 
-def _first_changed_python_line(parsed_file: _ParsedPythonFile) -> int:
-    if parsed_file.changed_lines is not None:
-        for line_number in sorted(parsed_file.changed_lines):
-            if 1 <= line_number <= len(parsed_file.source_lines):
-                line = parsed_file.source_lines[line_number - 1]
-                if line.strip() and not line.lstrip().startswith("#"):
-                    return line_number
-    return 1
 
 
 def _python_name_tokens(value: str) -> frozenset[str]:
     return frozenset(token for token in re.split(r"[^a-z0-9]+", value.lower()) if token)
 
 
-def _python_path_tokens(relative_path: str) -> frozenset[str]:
-    path = Path(relative_path.replace("\\", "/"))
-    tokens: set[str] = set()
-    for part in path.parts:
-        tokens.update(_python_name_tokens(Path(part).stem))
-    return frozenset(tokens)
 
 
 def _is_ingress_python_path(relative_path: str) -> bool:
@@ -7852,97 +7435,18 @@ def _is_ingress_python_path(relative_path: str) -> bool:
     )
 
 
-def _is_contract_surface_python_path(relative_path: str) -> bool:
-    path = Path(relative_path.replace("\\", "/"))
-    if path.suffix.lower() != ".py" or "tests" in path.parts:
-        return False
-    stem = path.stem.lower()
-    return (
-        any(part in _CONTRACT_SURFACE_DIRECTORY_MARKERS for part in path.parts)
-        or bool(_python_path_tokens(relative_path) & _CONTRACT_SURFACE_STEM_MARKERS)
-        or stem in _CONTRACT_SURFACE_EXACT_STEMS
-    )
 
 
-def _is_deploy_env_surface_python_path(relative_path: str) -> bool:
-    path = Path(relative_path.replace("\\", "/"))
-    if path.suffix.lower() != ".py" or "tests" in path.parts:
-        return False
-    return any(part in _DEPLOY_ENV_DIRECTORY_MARKERS for part in path.parts) or bool(
-        _python_path_tokens(relative_path) & _DEPLOY_ENV_STEM_MARKERS
-    )
 
 
-def _matching_contract_canary_test_paths(
-    relative_path: str, *, test_paths: frozenset[str]
-) -> tuple[str, ...]:
-    source_tokens = _python_path_tokens(relative_path) - {"src", "test", "tests"}
-    matches = [
-        test_path
-        for test_path in sorted(test_paths)
-        if _python_path_tokens(test_path) & _CONTRACT_TEST_MARKERS
-        and _python_path_tokens(test_path) & source_tokens
-    ]
-    return tuple(matches)
 
 
-def _matching_deploy_env_test_paths(
-    relative_path: str, *, test_paths: frozenset[str]
-) -> tuple[str, ...]:
-    source_tokens = _python_path_tokens(relative_path)
-    expected_markers = set(source_tokens & _DEPLOY_ENV_TEST_MARKERS)
-    if "config" in Path(relative_path.replace("\\", "/")).parts:
-        expected_markers.add("config")
-    if not expected_markers:
-        expected_markers.add("config")
-    matches = [
-        test_path
-        for test_path in sorted(test_paths)
-        if _python_path_tokens(test_path) & frozenset(expected_markers)
-    ]
-    return tuple(matches)
 
 
-def _suggest_contract_canary_paths(relative_path: str) -> tuple[str, ...]:
-    tokens = _python_path_tokens(relative_path)
-    candidates: list[str] = []
-    if {"platform", "contracts"} <= tokens:
-        candidates.append("tests/test_platform_sidecar_contracts.py")
-    if {"booking", "contract"} & tokens:
-        candidates.append("tests/test_external_booking_contract.py")
-    if {"sidecar", "eval", "gates"} <= tokens:
-        candidates.append("tests/test_sidecar_eval_gates.py")
-    flattened = _python_runtime_test_flattened_name(relative_path)
-    if flattened:
-        candidates.append(Path("tests", f"test_{flattened}_contracts.py").as_posix())
-    return _unique_preserving_order(candidates)
 
 
-def _suggest_deploy_env_test_paths(relative_path: str) -> tuple[str, ...]:
-    tokens = _python_path_tokens(relative_path)
-    candidates: list[str] = []
-    if "config" in tokens:
-        candidates.append("tests/test_config.py")
-    if {"sidecar", "config"} <= tokens:
-        candidates.append("tests/test_sidecar_config.py")
-    if {"tenant", "readiness"} <= tokens or "readiness" in tokens:
-        candidates.append("tests/test_tenant_readiness.py")
-    if {"tenant", "snapshot"} <= tokens or "snapshot" in tokens:
-        candidates.append("tests/test_tenant_config_snapshot.py")
-    if "health" in tokens:
-        candidates.append("tests/test_health_detailed.py")
-    return _unique_preserving_order(candidates)
 
 
-def _unique_preserving_order(values: Sequence[str]) -> tuple[str, ...]:
-    ordered: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        if value in seen:
-            continue
-        seen.add(value)
-        ordered.append(value)
-    return tuple(ordered)
 
 
 def _iter_webhook_payload_without_normalization_matches(
@@ -8420,21 +7924,6 @@ def _iter_db_sslmode_matches(
             yield _DbSslmodeMatch(node=node, literal_value=text)
 
 
-def _iter_chain_confirmation_external_matches(
-    parsed_file: _ParsedPythonFile,
-) -> Iterator[_ChainConfirmationMatch]:
-    path_markers = _python_path_markers(parsed_file.relative_path)
-    if not path_markers & _EXTERNAL_CHANNEL_NAMES:
-        return
-    for route_function in _iter_route_functions(parsed_file):
-        func_tokens = _split_python_identifier_tokens(route_function.name)
-        if not func_tokens & _CHAIN_CONFIRMATION_MARKERS:
-            continue
-        yield _ChainConfirmationMatch(
-            node=route_function,
-            access_pattern=route_function.name,
-            symbol=route_function.name,
-        )
 
 
 def _iter_context_manager_exit_matches(
@@ -8455,48 +7944,8 @@ def _iter_context_manager_exit_matches(
             )
 
 
-def _iter_commerce_price_leak_matches(
-    parsed_file: _ParsedPythonFile,
-) -> Iterator[_CommercePriceLeakMatch]:
-    if not _is_transport_python_path(parsed_file.relative_path):
-        return
-    for node in ast.walk(parsed_file.module):
-        text: str | None = None
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            text = node.value
-        elif isinstance(node, ast.JoinedStr):
-            text = _python_joined_str_template(node, "{}")
-        if text is None:
-            continue
-        lowered = text.lower()
-        if any(marker in lowered for marker in _COMMERCE_PRICE_MARKERS):
-            yield _CommercePriceLeakMatch(
-                node=node,
-                literal_value=text,
-                symbol=_enclosing_python_symbol(parsed_file.module, node),
-            )
 
 
-def _iter_employee_payroll_leak_matches(
-    parsed_file: _ParsedPythonFile,
-) -> Iterator[_PayrollLeakMatch]:
-    if not _is_transport_python_path(parsed_file.relative_path):
-        return
-    for node in ast.walk(parsed_file.module):
-        text: str | None = None
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            text = node.value
-        elif isinstance(node, ast.JoinedStr):
-            text = _python_joined_str_template(node, "{}")
-        if text is None:
-            continue
-        lowered = text.lower()
-        if any(marker in lowered for marker in _PAYROLL_MARKERS):
-            yield _PayrollLeakMatch(
-                node=node,
-                literal_value=text,
-                symbol=_enclosing_python_symbol(parsed_file.module, node),
-            )
 
 
 def _iter_tenant_shared_webhook_secret_matches(
@@ -8596,32 +8045,6 @@ def _iter_orphaned_async_task_matches(
                 )
 
 
-def _iter_retry_counter_matches(
-    parsed_file: _ParsedPythonFile,
-) -> Iterator[_RetryCounterMatch]:
-    for callable_node in _iter_runtime_python_callables(parsed_file.module):
-        tokens = _split_python_identifier_tokens(callable_node.name)
-        if not tokens & _RETRY_LOOP_MARKERS:
-            continue
-        has_aggregation = any(
-            isinstance(node, ast.Call)
-            and _resolve_call_name(node.func, parsed_file.import_aliases) in {"max", "aggregate"}
-            for node in ast.walk(callable_node)
-        )
-        if has_aggregation:
-            continue
-        for node in ast.walk(callable_node):
-            if not isinstance(node, ast.Attribute):
-                continue
-            if node.attr == "reference":
-                parent = _python_access_path(node.value)
-                if parent is not None and "issue" in parent.lower():
-                    yield _RetryCounterMatch(
-                        node=node,
-                        access_pattern=f"{parent}.reference",
-                        symbol=callable_node.name,
-                    )
-                    break
 
 
 def _is_webhook_python_path(relative_path: str) -> bool:

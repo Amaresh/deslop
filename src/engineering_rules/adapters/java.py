@@ -142,18 +142,6 @@ _JAVA_DETACHED_ASYNC_PATTERN = re.compile(
     r"\b(?P<owner>CompletableFuture|[A-Za-z_][A-Za-z0-9_]*)\."
     r"(?P<member>runAsync|execute)\s*\("
 )
-_JAVA_TENANT_CONTEXT_SET_PATTERN = re.compile(r"TenantContext\.setCurrentTenant(?:Id|Code)\s*\(")
-_JAVA_TENANT_CONTEXT_BIND_PATTERN = re.compile(
-    r"TenantContext\.setCurrent(?:Tenant|Branch)[A-Za-z0-9_]*\s*\("
-)
-_JAVA_TENANT_CONTEXT_CLEAR_PATTERN = re.compile(r"TenantContext\.clear\s*\(")
-_JAVA_TENANT_CONTEXT_DIRECT_MUTATION_PATTERN = re.compile(
-    r"TenantContext\.(?P<member>setCurrent(?:Tenant|Branch)[A-Za-z0-9_]*|clear)\s*\("
-)
-_JAVA_TENANT_CONTEXT_VALUE_PATTERN = re.compile(
-    r"\btenantId\b|\.tenantId\s*\(\)|\.getTenantId\s*\(|"
-    r"\btenantCode\b|\.tenantCode\s*\(\)|\.getTenantCode\s*\("
-)
 _SCHEDULED_ANNOTATION_PATTERN = re.compile(r"@Scheduled\b(?:\s*\([^)]*\))?")
 _JAVA_HANDLER_INTERCEPTOR_HINT_PATTERN = re.compile(
     r"\b(?:HandlerInterceptor|WebRequestInterceptor)\b"
@@ -190,7 +178,6 @@ _JAVA_RESPONSE_PARAM_PATTERN = re.compile(
 _JAVA_FILTER_CHAIN_PARAM_PATTERN = re.compile(r"\bFilterChain\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\b")
 _JAVA_IMPORT_PATTERN = re.compile(r"^\s*import\s+(?P<fqcn>[A-Za-z0-9_.]+)\s*;", re.MULTILINE)
 _JAVA_ENTITY_ANNOTATION_PATTERN = re.compile(r"@Entity\b(?:\s*\([^)]*\))?")
-_JAVA_REPOSITORY_INTERFACE_PATTERN = re.compile(r"\binterface\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\b")
 _JAVA_REPOSITORY_FIELD_PATTERN = re.compile(
     r"\b(?:private|protected|public)?\s*(?:static\s+)?(?:final\s+)?"
     r"(?P<type>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*Repository)\s+"
@@ -237,32 +224,6 @@ _JAVA_COLLECTION_FOREACH_PATTERN = re.compile(
 _JAVA_SAVEALL_CALL_PATTERN = re.compile(
     r"\b(?:this\.)?(?P<owner>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*saveAll\s*\(\s*"
     r"(?:this\.)?(?P<collection>[A-Za-z_][A-Za-z0-9_]*)\s*\)"
-)
-_JAVA_TENANT_SCOPED_ID_LOOKUP_PATTERN = re.compile(
-    r"\b(?P<method>"
-    r"findByIdAndTenantId(?:[A-Za-z0-9_]*)?"
-    r"|findByTenantIdAndId(?:[A-Za-z0-9_]*)?"
-    r")\s*\("
-)
-_JAVA_BARE_TENANT_LOOKUP_PATTERN = re.compile(
-    r"\b(?:this\.)?(?P<owner>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*"
-    r"(?P<method>findById|getReferenceById)\s*\("
-)
-_JAVA_SAVE_CALL_PATTERN = re.compile(
-    r"\b(?:this\.)?(?P<owner>[A-Za-z_][A-Za-z0-9_]*)\s*\.\s*save\s*\(\s*"
-    r"(?:this\.)?(?P<artifact>[A-Za-z_][A-Za-z0-9_]*)\s*\)"
-)
-_JAVA_ACTIVE_SETTER_PATTERN_TEMPLATE = r"\b{artifact}\s*\.\s*setActive\s*\(\s*true\s*\)"
-_JAVA_ACTIVE_STATUS_PATTERN_TEMPLATE = (
-    r"\b{artifact}\s*\.\s*set(?:Status|State)\s*\(\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)?"
-    r"(?P<state>ACTIVE|OPEN|PENDING|ENABLED|CURRENT)\b"
-)
-_JAVA_ACTIVE_GUARD_PATTERN = re.compile(
-    r"\b(?:exists|count|find(?:First|Top)?)By[A-Za-z0-9_]*(?:ActiveTrue|Status|State)[A-Za-z0-9_]*\s*\("
-)
-_JAVA_UNIQUENESS_METHOD_PATTERN = re.compile(
-    r"\b(?:boolean|Boolean|long|Long|int|Integer)\s+"
-    r"(?P<method>(?:exists|count)By[A-Z][A-Za-z0-9_]*)\s*\("
 )
 _TRANSACTIONAL_ANNOTATION_PATTERN = re.compile(r"@Transactional\b(?:\s*\((?P<args>[^)]*)\))?")
 _EVENT_LISTENER_ANNOTATION_PATTERN = re.compile(r"@EventListener\b(?:\s*\([^)]*\))?")
@@ -409,7 +370,6 @@ _JAVA_LOG_CALL_PATTERN = re.compile(
 _JAVA_MEMBER_CALL_PATTERN = re.compile(
     r"\b(?P<owner>[A-Za-z_][A-Za-z0-9_.]*)\.(?P<method>[A-Za-z_][A-Za-z0-9_]*)\s*\("
 )
-_JAVA_FINALLY_PATTERN = re.compile(r"\bfinally\s*\{")
 _RUNTIME_EXCLUDED_PATH_MARKERS = frozenset(
     {
         "benchmark",
@@ -500,57 +460,6 @@ _JAVA_SCHEDULER_TEST_FOCUS_PATTERN = re.compile(
     r"@Scheduled\b|\bfixed(?:Delay|Rate)\b|\b(?:cron|job|schedule|scheduled|scheduler|scheduling|trigger)\b",
     re.IGNORECASE,
 )
-_JAVA_TENANT_SCOPE_MARKERS = frozenset({"branch", "tenant"})
-_JAVA_BUSINESS_SCOPE_MARKERS = frozenset(
-    {
-        "account",
-        "branch",
-        "business",
-        "company",
-        "dealer",
-        "location",
-        "shop",
-        "tenant",
-        "workshop",
-    }
-)
-_JAVA_BUSINESS_KEY_MARKERS = frozenset(
-    {
-        "code",
-        "email",
-        "mobile",
-        "name",
-        "number",
-        "phone",
-        "plate",
-        "reference",
-        "registration",
-        "vin",
-    }
-)
-_JAVA_TENANT_BOUNDARY_INFRA_MARKERS = frozenset(
-    {"decorator", "executor", "runner", "scope", "scoped", "template"}
-)
-_JAVA_SCHEDULER_ACTION_METHOD_MARKERS = frozenset(
-    {
-        "dispatch",
-        "enqueue",
-        "execute",
-        "handle",
-        "process",
-        "publish",
-        "refresh",
-        "reconcile",
-        "relay",
-        "retry",
-        "run",
-        "send",
-        "start",
-        "sync",
-        "trigger",
-        "update",
-    }
-)
 _JAVA_PAGE_RETURN_PATTERN = re.compile(r"\bPage\s*<")
 _JAVA_PAGEABLE_PARAM_PATTERN = re.compile(r"\bPageable\s+")
 _JAVA_ENTITY_GRAPH_PATTERN = re.compile(r"@EntityGraph\b|JOIN\s+FETCH\b")
@@ -581,16 +490,9 @@ _JAVA_AUTH_FALLBACK_PATTERN = re.compile(
     r"(?:\?|:|\.orElse(?:Get)?)\s*\(\s*(?:\w*\s*,\s*)?"
     r"(?:1|admin|system|root)\b"
 )
-_JAVA_PUSH_NOTIFICATION_PATTERN = re.compile(r"\b(?:push|fcm)\w*\.\s*(?:send|notify|publish)\s*\(")
-_JAVA_IN_APP_NOTIFICATION_PATTERN = re.compile(r"\b(?:inApp|notificationRepository)\b")
 _JAVA_RETRY_LOOP_PATTERN = re.compile(r"\b(?:while|for)\s*\([^)]*(?:retry|attempt)\w*[^)]*\)")
 _JAVA_STATUS_SETTER_PATTERN = re.compile(r"\bset(?:Status|State|RetryCount|Attempt)\s*\(")
-_JAVA_LOB_BYTEA_PATTERN = re.compile(
-    r"@Lob(?:\s*\([^)]*\))?\s+(?:private|protected|public)?\s*"
-    r"(?:static\s+)?(?:final\s+)?byte\[\]"
-)
 _JAVA_FLYWAY_VERSION_PATTERN = re.compile(r"^[VR](\d+)__.+")
-_JAVA_POST_MAPPING_PATTERN = re.compile(r"@PostMapping\b")
 _JAVA_MULTIPART_FILE_PATTERN = re.compile(r"\bMultipartFile\b")
 _JAVA_FILE_VALIDATION_PATTERN = re.compile(
     r"\b(?:maxSize|maxFileSize|contentType|MediaType|@Size|@MaxFileSize)\b"
@@ -599,9 +501,6 @@ _JAVA_ENHANCED_FOR_LOOP_PATTERN = re.compile(
     r"\bfor\s*\(\s*(?:final\s+)?(?P<type>[^:;()]+?)\s+"
     r"(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*"
     r"(?P<iterable>(?:[^()]|\([^)]*\))+)\)\s*\{"
-)
-_JAVA_FOREACH_ITERATION_PATTERN = re.compile(
-    r"\b(?P<iterable>[A-Za-z_][A-Za-z0-9_.]*)\s*\.\s*forEach\s*\("
 )
 _JAVA_LAZY_PROVIDER_DECLARATION_PATTERN = re.compile(
     r"\b(?P<provider_type>(?:[A-Za-z_][A-Za-z0-9_]*\.)*"
@@ -672,13 +571,6 @@ _JAVA_JPQL_NULL_OR_LOWER_PATTERN = re.compile(
     r"LOWER\s*\([^)]+\)\s*=\s*LOWER\s*\(\s*:\w+\s*\)[\s\S]*?:\w+\s+IS\s+NULL\s+OR",
     re.IGNORECASE,
 )
-_JAVA_DISPATCH_COALESCING_TRANSACTIONAL_PATTERN = re.compile(
-    r"\bdispatchCoalescingTransactional\s*\("
-)
-_JAVA_EVENT_LISTENER_CONTEXT_PATTERN = re.compile(
-    r"@TransactionalEventListener\b|@EventListener\b|\bclass\s+\w*Listener\b",
-    re.IGNORECASE,
-)
 
 
 @dataclass(frozen=True)
@@ -704,12 +596,6 @@ class _JavaServiceLocatorMatch:
     resolution_kind: str
 
 
-@dataclass(frozen=True)
-class _JavaTenantContextMutationMatch:
-    line_range: range
-    line_number: int
-    access_pattern: str
-    mutation_kind: str
 
 
 @dataclass(frozen=True)
@@ -720,12 +606,6 @@ class _JavaDetachedAsyncMatch:
     launch_kind: str
 
 
-@dataclass(frozen=True)
-class _JavaAsyncContextGapMatch:
-    line_range: range
-    line_number: int
-    access_pattern: str
-    propagation_kind: str
 
 
 @dataclass(frozen=True)
@@ -796,17 +676,8 @@ class _JavaControllerRepositoryAccessMatch:
     access_kind: str
 
 
-@dataclass(frozen=True)
-class _JavaRepositoryContract:
-    simple_name: str
-    fqcn: str
-    tenant_lookup_methods: tuple[str, ...]
 
 
-@dataclass(frozen=True)
-class _JavaRepositoryContractIndex:
-    by_fqcn: dict[str, _JavaRepositoryContract]
-    by_simple_name: dict[str, tuple[_JavaRepositoryContract, ...]]
 
 
 @dataclass(frozen=True)
@@ -815,14 +686,6 @@ class _JavaEntityIndex:
     by_simple_name: dict[str, tuple[str, ...]]
 
 
-@dataclass(frozen=True)
-class _JavaTenantScopeLookupMatch:
-    line_range: range
-    line_number: int
-    access_pattern: str
-    repository_type: str
-    tenant_lookup_methods: tuple[str, ...]
-    lookup_kind: str
 
 
 @dataclass(frozen=True)
@@ -886,21 +749,8 @@ class _JavaEventListenerTransactionBoundaryMatch:
     write_kind: str
 
 
-@dataclass(frozen=True)
-class _JavaActiveArtifactMatch:
-    line_range: range
-    line_number: int
-    access_pattern: str
-    service_method: str
-    artifact_guard: str
 
 
-@dataclass(frozen=True)
-class _JavaBusinessUniquenessMatch:
-    line_range: range
-    line_number: int
-    repository_method: str
-    scope_kind: str
 
 
 @dataclass(frozen=True)
@@ -920,14 +770,6 @@ class _JavaEntityBoundaryMatch:
     entity_type: str
 
 
-@dataclass(frozen=True)
-class _JavaScheduledCrossTenantIterationMatch:
-    line_range: range
-    line_number: int
-    access_pattern: str
-    scheduled_method: str
-    tenant_source: str
-    iteration_kind: str
 
 
 @dataclass(frozen=True)
@@ -1952,15 +1794,6 @@ def _is_java_transactional_external_io_path(relative_path: str, source: str) -> 
     return not bool(stem_tokens & _JAVA_TRANSACTIONAL_EXTERNAL_IO_OWNER_MARKERS)
 
 
-def _is_java_explicit_tenant_boundary(relative_path: str, source: str) -> bool:
-    tokens = _java_path_and_type_tokens(relative_path, source)
-    if tokens & {"filter", "filters", "interceptor", "interceptors"}:
-        return True
-    if _JAVA_HANDLER_INTERCEPTOR_HINT_PATTERN.search(source):
-        return True
-    return bool(
-        tokens & _JAVA_TENANT_SCOPE_MARKERS and tokens & _JAVA_TENANT_BOUNDARY_INFRA_MARKERS
-    )
 
 
 def _is_java_factory_or_bootstrap_context(relative_path: str, source: str) -> bool:
@@ -2046,57 +1879,12 @@ def _iter_java_service_locator_matches(source: str) -> tuple[_JavaServiceLocator
     return tuple(matches)
 
 
-def _java_tenant_context_mutation_kind(member: str) -> str:
-    member_tokens = set(_shared_split_identifier_tokens(member))
-    if "clear" in member_tokens:
-        return "clear"
-    if "branch" in member_tokens:
-        return "set-current-branch"
-    return "set-current-tenant"
 
 
-def _iter_java_tenant_context_mutation_matches(
-    source: str,
-) -> tuple[_JavaTenantContextMutationMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    matches: list[_JavaTenantContextMutationMatch] = []
-    for match in _JAVA_TENANT_CONTEXT_DIRECT_MUTATION_PATTERN.finditer(scannable_source):
-        member = match.group("member")
-        line_range = _match_line_range(scannable_source, match.start(), match.end("member"))
-        matches.append(
-            _JavaTenantContextMutationMatch(
-                line_range=line_range,
-                line_number=line_range.start,
-                access_pattern=f"TenantContext.{member}",
-                mutation_kind=_java_tenant_context_mutation_kind(member),
-            )
-        )
-    return tuple(matches)
 
 
-def _java_has_balanced_tenant_context_finally_boundary(body_text: str) -> bool:
-    return bool(
-        _JAVA_TENANT_CONTEXT_BIND_PATTERN.search(body_text)
-        and _JAVA_TENANT_CONTEXT_CLEAR_PATTERN.search(body_text)
-        and _JAVA_FINALLY_PATTERN.search(body_text)
-    )
 
 
-def _iter_java_balanced_tenant_boundary_ranges(source: str) -> tuple[range, ...]:
-    scannable_source = _strip_java_comments(source)
-    boundary_ranges: list[range] = []
-    for annotation_pattern in (
-        _ASYNC_ANNOTATION_PATTERN,
-        _EVENT_LISTENER_ANNOTATION_PATTERN,
-    ):
-        for annotation_match in annotation_pattern.finditer(scannable_source):
-            context_info = _java_method_context_for_annotation(scannable_source, annotation_match)
-            if context_info is None:
-                continue
-            method_context, _ = context_info
-            if _java_has_balanced_tenant_context_finally_boundary(method_context.body):
-                boundary_ranges.append(method_context.line_range)
-    return tuple(boundary_ranges)
 
 
 def _iter_java_service_layer_timeout_matches(source: str) -> tuple[_JavaTimeoutShapingMatch, ...]:
@@ -2123,37 +1911,6 @@ def _iter_java_service_layer_timeout_matches(source: str) -> tuple[_JavaTimeoutS
     return tuple(matches)
 
 
-def _iter_java_service_layer_tenant_scope_matches(
-    source: str,
-    *,
-    repository_contract_index: _JavaRepositoryContractIndex,
-) -> tuple[_JavaTenantScopeLookupMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    repository_fields = _java_repository_field_contracts(
-        scannable_source, repository_contract_index=repository_contract_index
-    )
-    if not repository_fields:
-        return ()
-
-    matches: list[_JavaTenantScopeLookupMatch] = []
-    for match in _JAVA_BARE_TENANT_LOOKUP_PATTERN.finditer(scannable_source):
-        owner = match.group("owner")
-        contract = repository_fields.get(owner)
-        if contract is None:
-            continue
-        line_range = _match_line_range(scannable_source, match.start("owner"), match.end("method"))
-        bare_method = match.group("method")
-        matches.append(
-            _JavaTenantScopeLookupMatch(
-                line_range=line_range,
-                line_number=line_range.start,
-                access_pattern=f"{owner}.{bare_method}",
-                repository_type=contract.simple_name,
-                tenant_lookup_methods=contract.tenant_lookup_methods,
-                lookup_kind=bare_method,
-            )
-        )
-    return tuple(matches)
 
 
 def _iter_java_unbounded_findall_matches(
@@ -2675,74 +2432,10 @@ def _iter_java_event_listener_boundary_matches(
     return tuple(matches)
 
 
-def _java_variable_has_active_artifact_state(body_text: str, artifact_name: str) -> bool:
-    active_pattern = re.compile(
-        _JAVA_ACTIVE_SETTER_PATTERN_TEMPLATE.format(artifact=re.escape(artifact_name))
-    )
-    if active_pattern.search(body_text):
-        return True
-    status_pattern = re.compile(
-        _JAVA_ACTIVE_STATUS_PATTERN_TEMPLATE.format(artifact=re.escape(artifact_name))
-    )
-    return status_pattern.search(body_text) is not None
 
 
-def _iter_java_active_artifact_matches(source: str) -> tuple[_JavaActiveArtifactMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    repository_fields = _java_repository_field_types(scannable_source)
-    if not repository_fields:
-        return ()
-
-    matches: list[_JavaActiveArtifactMatch] = []
-    for context in _iter_java_method_contexts(scannable_source):
-        scannable_body = _strip_java_string_literals(context.body)
-        if not _JAVA_ACTIVE_GUARD_PATTERN.search(scannable_body):
-            for save_match in _JAVA_SAVE_CALL_PATTERN.finditer(scannable_body):
-                owner_name = save_match.group("owner")
-                if owner_name not in repository_fields:
-                    continue
-                artifact_name = save_match.group("artifact")
-                if not _java_variable_has_active_artifact_state(scannable_body, artifact_name):
-                    continue
-                line_range = _match_line_range(
-                    scannable_body, save_match.start("owner"), save_match.end("artifact")
-                )
-                absolute_line_range = _java_absolute_body_line_range(context, line_range)
-                matches.append(
-                    _JavaActiveArtifactMatch(
-                        line_range=absolute_line_range,
-                        line_number=absolute_line_range.start,
-                        access_pattern=f"{owner_name}.save",
-                        service_method=context.name,
-                        artifact_guard="missing-idempotency-check",
-                    )
-                )
-    return tuple(matches)
 
 
-def _iter_java_business_uniqueness_matches(source: str) -> tuple[_JavaBusinessUniquenessMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    matches: list[_JavaBusinessUniquenessMatch] = []
-    for method_match in _JAVA_UNIQUENESS_METHOD_PATTERN.finditer(scannable_source):
-        method_name = method_match.group("method")
-        tokens = set(_shared_split_identifier_tokens(method_name))
-        business_key_tokens = tokens & _JAVA_BUSINESS_KEY_MARKERS
-        if not business_key_tokens:
-            continue
-        if tokens & _JAVA_BUSINESS_SCOPE_MARKERS:
-            continue
-        line_range = _match_line_range(
-            scannable_source, method_match.start("method"), method_match.end("method")
-        )
-        matches.append(
-            _JavaBusinessUniquenessMatch(
-                line_range=line_range,
-                line_number=line_range.start,
-                repository_method=method_name,
-                scope_kind="missing-business-scope",
-            )
-        )
-    return tuple(matches)
 
 
 def _java_migration_operation_kind(source: str) -> tuple[str, range] | None:
@@ -2902,55 +2595,8 @@ def _iter_java_detached_async_matches(source: str) -> tuple[_JavaDetachedAsyncMa
     return tuple(matches)
 
 
-def _java_async_method_threads_tenant_identity(
-    method_body: str, *, collaborator_fields: dict[str, str]
-) -> bool:
-    scannable_body = _strip_java_string_literals(method_body)
-    collaborator_call_count = 0
-    for match in _JAVA_MEMBER_CALL_PATTERN.finditer(scannable_body):
-        owner_name = match.group("owner").split(".")[-1]
-        if owner_name == "TenantContext" or _looks_like_java_log_receiver(owner_name):
-            continue
-        if owner_name not in collaborator_fields:
-            continue
-        arguments, _ = _extract_java_call_arguments(scannable_body, match.end())
-        collaborator_call_count += 1
-        if not any(
-            _JAVA_TENANT_CONTEXT_VALUE_PATTERN.search(argument) is not None
-            for argument in arguments
-        ):
-            return False
-    return collaborator_call_count > 0
 
 
-def _iter_java_async_tenant_context_gap_matches(
-    source: str,
-) -> tuple[_JavaAsyncContextGapMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    collaborator_fields = _java_collaborator_field_types(scannable_source)
-    matches: list[_JavaAsyncContextGapMatch] = []
-    for annotation_match in _ASYNC_ANNOTATION_PATTERN.finditer(scannable_source):
-        async_method = _java_async_method_context(scannable_source, annotation_match)
-        if async_method is None:
-            continue
-        method_name, method_body, line_range = async_method
-        if _JAVA_TENANT_CONTEXT_SET_PATTERN.search(method_body):
-            continue
-        if _java_async_method_threads_tenant_identity(
-            method_body, collaborator_fields=collaborator_fields
-        ):
-            continue
-        if _JAVA_TENANT_CONTEXT_VALUE_PATTERN.search(method_body) is None:
-            continue
-        matches.append(
-            _JavaAsyncContextGapMatch(
-                line_range=line_range,
-                line_number=line_range.start,
-                access_pattern=f"@Async {method_name}",
-                propagation_kind="tenant-context-not-bound",
-            )
-        )
-    return tuple(matches)
 
 
 def _iter_java_background_observability_matches(
@@ -3183,197 +2829,20 @@ def _iter_java_scheduled_method_contexts(source: str) -> tuple[_JavaMethodContex
     return tuple(contexts)
 
 
-def _java_iteration_lambda_context(argument_text: str) -> tuple[str, str] | None:
-    arrow_index = argument_text.find("->")
-    if arrow_index == -1:
-        return None
-    parameter_text = argument_text[:arrow_index].strip()
-    if parameter_text.startswith("(") and parameter_text.endswith(")"):
-        parameter_text = parameter_text[1:-1].strip()
-    if not parameter_text:
-        return None
-    parameter_names = [
-        part.rsplit(" ", 1)[-1].strip() for part in parameter_text.split(",") if part.strip()
-    ]
-    parameter_names = [
-        name for name in parameter_names if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name)
-    ]
-    if not parameter_names:
-        return None
-    parameter_name = next(
-        (
-            name
-            for name in parameter_names
-            if set(_shared_split_identifier_tokens(name)) & _JAVA_TENANT_SCOPE_MARKERS
-        ),
-        parameter_names[-1],
-    )
-    body_text = argument_text[arrow_index + 2 :].strip()
-    if not body_text:
-        return None
-    if body_text.startswith("{"):
-        body_text, _ = _scan_java_block(body_text, 0)
-    return parameter_name, body_text
 
 
-def _java_loop_variable_has_tenant_accessor(loop_variable: str, loop_body: str) -> bool:
-    accessor_pattern = re.compile(
-        rf"\b{re.escape(loop_variable)}\s*\.\s*"
-        r"(?:getTenant(?:Id|Code)?|tenant(?:Id|Code)|"
-        r"getBranch(?:Id|Code)?|branch(?:Id|Code))\s*\("
-    )
-    return accessor_pattern.search(loop_body) is not None
 
 
-def _java_cross_tenant_iteration_kind(
-    *,
-    loop_variable: str,
-    iterable_expression: str,
-    loop_body: str,
-) -> str | None:
-    iterable_tokens = _java_identifier_tokens(iterable_expression)
-    loop_tokens = set(_shared_split_identifier_tokens(loop_variable))
-    if (iterable_tokens | loop_tokens) & _JAVA_TENANT_SCOPE_MARKERS:
-        return "tenant-collection-iteration"
-    if _java_loop_variable_has_tenant_accessor(loop_variable, loop_body):
-        return "tenant-scoped-batch-iteration"
-    return None
 
 
-def _java_has_tenant_context_reset_boundary(body_text: str) -> bool:
-    return bool(
-        _JAVA_TENANT_CONTEXT_BIND_PATTERN.search(body_text)
-        and _JAVA_TENANT_CONTEXT_CLEAR_PATTERN.search(body_text)
-    )
 
 
-def _java_call_looks_like_tenant_boundary(
-    owner_name: str, method_name: str, collaborator_type: str | None
-) -> bool:
-    tokens = set(_shared_split_identifier_tokens(owner_name.split(".")[-1]))
-    tokens.update(_shared_split_identifier_tokens(method_name))
-    if collaborator_type is not None:
-        tokens.update(_shared_split_identifier_tokens(_java_simple_type_name(collaborator_type)))
-    if tokens & _JAVA_TENANT_SCOPE_MARKERS and tokens & _JAVA_TENANT_BOUNDARY_INFRA_MARKERS:
-        return True
-    method_tokens = set(_shared_split_identifier_tokens(method_name))
-    return "tenant" in method_tokens and bool(
-        method_tokens & {"execute", "for", "in", "run", "with", "within"}
-    )
 
 
-def _java_has_explicit_tenant_boundary(
-    loop_body: str, *, collaborator_fields: dict[str, str]
-) -> bool:
-    scannable_body = _strip_java_string_literals(loop_body)
-    if _java_has_tenant_context_reset_boundary(scannable_body):
-        return True
-    for match in _JAVA_MEMBER_CALL_PATTERN.finditer(scannable_body):
-        owner_name = match.group("owner").split(".")[-1]
-        collaborator_type = collaborator_fields.get(owner_name)
-        if _java_call_looks_like_tenant_boundary(
-            owner_name,
-            match.group("method"),
-            collaborator_type,
-        ):
-            return True
-    return False
 
 
-def _java_scheduler_downstream_access(
-    loop_body: str, *, collaborator_fields: dict[str, str]
-) -> str | None:
-    scannable_body = _strip_java_string_literals(loop_body)
-    for match in _JAVA_MEMBER_CALL_PATTERN.finditer(scannable_body):
-        owner_name = match.group("owner").split(".")[-1]
-        method_name = match.group("method")
-        if owner_name == "TenantContext" or _looks_like_java_log_receiver(owner_name):
-            continue
-        collaborator_type = collaborator_fields.get(owner_name)
-        if _java_call_looks_like_tenant_boundary(owner_name, method_name, collaborator_type):
-            continue
-        method_tokens = set(_shared_split_identifier_tokens(method_name))
-        if not method_tokens & _JAVA_SCHEDULER_ACTION_METHOD_MARKERS:
-            continue
-        return f"{owner_name}.{method_name}"
-    return None
 
 
-def _iter_java_scheduled_cross_tenant_iteration_matches(
-    source: str,
-) -> tuple[_JavaScheduledCrossTenantIterationMatch, ...]:
-    scannable_source = _strip_java_comments(source)
-    collaborator_fields = _java_collaborator_field_types(scannable_source)
-    matches: list[_JavaScheduledCrossTenantIterationMatch] = []
-    for context in _iter_java_scheduled_method_contexts(scannable_source):
-        scannable_body = _strip_java_string_literals(context.body)
-        for loop_match in _JAVA_ENHANCED_FOR_LOOP_PATTERN.finditer(scannable_body):
-            loop_body, loop_end = _scan_java_block(scannable_body, loop_match.end() - 1)
-            iteration_kind = _java_cross_tenant_iteration_kind(
-                loop_variable=loop_match.group("var"),
-                iterable_expression=loop_match.group("iterable"),
-                loop_body=loop_body,
-            )
-            if iteration_kind is None or _java_has_explicit_tenant_boundary(
-                loop_body, collaborator_fields=collaborator_fields
-            ):
-                continue
-            access_pattern = _java_scheduler_downstream_access(
-                loop_body, collaborator_fields=collaborator_fields
-            )
-            if access_pattern is None:
-                continue
-            loop_line_range = _match_line_range(scannable_body, loop_match.start(), loop_end)
-            absolute_line_range = _java_absolute_body_line_range(context, loop_line_range)
-            matches.append(
-                _JavaScheduledCrossTenantIterationMatch(
-                    line_range=absolute_line_range,
-                    line_number=absolute_line_range.start,
-                    access_pattern=access_pattern,
-                    scheduled_method=context.name,
-                    tenant_source=_normalize_java_construction_pattern(
-                        loop_match.group("iterable")
-                    ),
-                    iteration_kind=iteration_kind,
-                )
-            )
-        for loop_match in _JAVA_FOREACH_ITERATION_PATTERN.finditer(scannable_body):
-            arguments, argument_end = _extract_java_call_arguments(scannable_body, loop_match.end())
-            if len(arguments) != 1:
-                continue
-            lambda_context = _java_iteration_lambda_context(arguments[0])
-            if lambda_context is None:
-                continue
-            loop_variable, loop_body = lambda_context
-            iteration_kind = _java_cross_tenant_iteration_kind(
-                loop_variable=loop_variable,
-                iterable_expression=loop_match.group("iterable"),
-                loop_body=loop_body,
-            )
-            if iteration_kind is None or _java_has_explicit_tenant_boundary(
-                loop_body, collaborator_fields=collaborator_fields
-            ):
-                continue
-            access_pattern = _java_scheduler_downstream_access(
-                loop_body, collaborator_fields=collaborator_fields
-            )
-            if access_pattern is None:
-                continue
-            loop_line_range = _match_line_range(scannable_body, loop_match.start(), argument_end)
-            absolute_line_range = _java_absolute_body_line_range(context, loop_line_range)
-            matches.append(
-                _JavaScheduledCrossTenantIterationMatch(
-                    line_range=absolute_line_range,
-                    line_number=absolute_line_range.start,
-                    access_pattern=access_pattern,
-                    scheduled_method=context.name,
-                    tenant_source=_normalize_java_construction_pattern(
-                        loop_match.group("iterable")
-                    ),
-                    iteration_kind=iteration_kind,
-                )
-            )
-    return tuple(matches)
 
 
 def _scan_java_block(source: str, brace_index: int) -> tuple[str, int]:
@@ -3564,11 +3033,6 @@ def _java_simple_type_name(value: str) -> str:
     return value.rsplit(".", 1)[-1].split("<", 1)[0].strip()
 
 
-def _java_identifier_tokens(text: str) -> set[str]:
-    tokens: set[str] = set()
-    for identifier in re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", text):
-        tokens.update(_shared_split_identifier_tokens(identifier))
-    return tokens
 
 
 def _looks_like_java_lazy_service_target(type_name: str) -> bool:
@@ -4407,51 +3871,6 @@ def _find_service_layer_outbound_timeout_findings(
     return findings
 
 
-def _find_service_layer_tenant_scope_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-    repository_contract_index: _JavaRepositoryContractIndex,
-) -> list[NormalizedFinding]:
-    if not _is_java_service_or_workflow_path(relative_path, source):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_service_layer_tenant_scope_matches(
-        source, repository_contract_index=repository_contract_index
-    ):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        tenant_lookup_methods = ", ".join(match.tenant_lookup_methods)
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java service/workflow code loads a tenant-owned entity via bare primary-key "
-                    f"lookup '{match.access_pattern}' even though repository "
-                    f"'{match.repository_type}' exposes tenant-scoped id lookup."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Use the tenant-scoped repository lookup instead of bare findById/"
-                    f"getReferenceById (for example: {tenant_lookup_methods})."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "repository_type": match.repository_type,
-                    "tenant_lookup_methods": tenant_lookup_methods,
-                    "lookup_kind": match.lookup_kind,
-                },
-            )
-        )
-    return findings
 
 
 def _find_unbounded_findall_without_pagination_findings(
@@ -4585,87 +4004,8 @@ def _find_event_listener_transaction_phase_boundary_findings(
     return findings
 
 
-def _find_active_artifact_creation_without_idempotency_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_java_service_or_workflow_path(relative_path, source):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_active_artifact_matches(source):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java service/workflow method "
-                    f"'{match.service_method}' persists a new active artifact via "
-                    f"'{match.access_pattern}' without an idempotency guard."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Check the business scope for an existing active artifact before saving, or "
-                    "route creation through a durable uniqueness/idempotency boundary."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "service_method": match.service_method,
-                    "artifact_guard": match.artifact_guard,
-                },
-            )
-        )
-    return findings
 
 
-def _find_business_uniqueness_without_scope_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_java_repository_path(relative_path) or _is_test_java_path(relative_path):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_business_uniqueness_matches(source):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java repository uniqueness helper "
-                    f"'{match.repository_method}' checks a business key without tenant or "
-                    "business scope."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Add tenant/branch/business scope to the uniqueness query so the check "
-                    "matches the database uniqueness boundary."
-                ),
-                metadata={
-                    "repository_method": match.repository_method,
-                    "scope_kind": match.scope_kind,
-                },
-            )
-        )
-    return findings
 
 
 def _find_nonadditive_flyway_migration_findings(
@@ -4831,45 +4171,6 @@ def _find_web_layer_detached_async_findings(
     return findings
 
 
-def _find_web_layer_async_tenant_context_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_web_layer_path(relative_path, source) or _is_test_java_path(relative_path):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_async_tenant_context_gap_matches(source):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java web-layer async work has tenant-bearing input but "
-                    f"'{match.access_pattern}' does not bind TenantContext before execution."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Set and clear TenantContext explicitly inside the async method, or route the "
-                    "tenant identity through an explicit request-context wrapper before touching "
-                    "tenant-scoped collaborators."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "propagation_kind": match.propagation_kind,
-                },
-            )
-        )
-    return findings
 
 
 def _find_web_layer_async_observability_findings(
@@ -4953,98 +4254,8 @@ def _find_service_layer_service_locator_findings(
     return findings
 
 
-def _find_service_layer_direct_tenant_context_mutation_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_java_service_or_workflow_path(relative_path, source):
-        return []
-    if _is_java_explicit_tenant_boundary(relative_path, source):
-        return []
-
-    balanced_boundary_ranges = _iter_java_balanced_tenant_boundary_ranges(source)
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_tenant_context_mutation_matches(source):
-        if any(
-            line in boundary_range
-            for boundary_range in balanced_boundary_ranges
-            for line in match.line_range
-        ):
-            continue
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java service/workflow code mutates tenant execution state directly via "
-                    f"'{match.access_pattern}'."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Move TenantContext binding to an explicit tenant runner, interceptor, or "
-                    "other infrastructure boundary instead of mutating it inside service or "
-                    "listener orchestration code."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "mutation_kind": match.mutation_kind,
-                },
-            )
-        )
-    return findings
 
 
-def _find_scheduler_cross_tenant_iteration_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_java_batch_or_scheduler_path(relative_path, source):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_scheduled_cross_tenant_iteration_matches(source):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java scheduled method "
-                    f"'{match.scheduled_method}' iterates tenant-scoped work and invokes "
-                    f"'{match.access_pattern}' without an explicit tenant-runner/reset boundary."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Wrap each tenant/item dispatch in a tenant runner (for example withTenant/"
-                    "runForTenant) or introduce an explicit bind-and-clear boundary before "
-                    "calling downstream collaborators from the scheduled loop."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "scheduled_method": match.scheduled_method,
-                    "tenant_source": match.tenant_source,
-                    "iteration_kind": match.iteration_kind,
-                },
-            )
-        )
-    return findings
 
 
 def _find_service_layer_objectprovider_circular_self_reference_findings(
@@ -5394,45 +4605,6 @@ def _find_service_layer_detached_async_findings(
     return findings
 
 
-def _find_service_layer_async_tenant_context_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    if not _is_java_service_or_workflow_path(relative_path, source):
-        return []
-
-    findings: list[NormalizedFinding] = []
-    for match in _iter_java_async_tenant_context_gap_matches(source):
-        if changed_lines is not None and not any(
-            line in changed_lines for line in match.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Java service/workflow async work has tenant-bearing input but "
-                    f"'{match.access_pattern}' does not bind TenantContext before execution."
-                ),
-                location=FindingLocation(path=relative_path, line=match.line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Set and clear TenantContext explicitly inside the async method, or route the "
-                    "tenant identity through an explicit wrapper before repository/service code "
-                    "runs on the async thread."
-                ),
-                metadata={
-                    "access_pattern": match.access_pattern,
-                    "propagation_kind": match.propagation_kind,
-                },
-            )
-        )
-    return findings
 
 
 def _find_service_layer_async_observability_findings(
@@ -6086,34 +5258,6 @@ def _latest_java_assignment_before(
     return max(candidates, key=lambda assignment: assignment.line_number)
 
 
-def _discover_java_repository_contracts(repo_root: Path) -> _JavaRepositoryContractIndex:
-    contracts: list[_JavaRepositoryContract] = []
-    for file_path in sorted(repo_root.rglob("*Repository.java")):
-        try:
-            relative_path = file_path.relative_to(repo_root).as_posix()
-        except ValueError:
-            continue
-        if _should_skip_path(relative_path) or _is_test_java_path(relative_path):
-            continue
-        try:
-            source = file_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        contract = _java_repository_contract(source, expected_simple_name=file_path.stem)
-        if contract is not None:
-            contracts.append(contract)
-
-    by_fqcn = {contract.fqcn: contract for contract in contracts}
-    by_simple_name: dict[str, list[_JavaRepositoryContract]] = {}
-    for contract in contracts:
-        by_simple_name.setdefault(contract.simple_name, []).append(contract)
-    return _JavaRepositoryContractIndex(
-        by_fqcn=by_fqcn,
-        by_simple_name={
-            simple_name: tuple(resolved_contracts)
-            for simple_name, resolved_contracts in by_simple_name.items()
-        },
-    )
 
 
 def _discover_java_entity_index(repo_root: Path) -> _JavaEntityIndex:
@@ -6239,77 +5383,10 @@ def _discover_java_scheduler_test_index(repo_root: Path) -> dict[str, tuple[str,
     }
 
 
-def _java_repository_contract(
-    source: str, *, expected_simple_name: str | None = None
-) -> _JavaRepositoryContract | None:
-    scannable_source = _strip_java_comments(source)
-    package_match = re.search(
-        r"^\s*package\s+(?P<name>[A-Za-z0-9_.]+)\s*;",
-        scannable_source,
-        re.MULTILINE,
-    )
-    interface_match = None
-    for candidate in _JAVA_REPOSITORY_INTERFACE_PATTERN.finditer(scannable_source):
-        candidate_name = candidate.group("name")
-        if expected_simple_name is not None and candidate_name == expected_simple_name:
-            interface_match = candidate
-            break
-        if interface_match is None and candidate_name.endswith("Repository"):
-            interface_match = candidate
-    if interface_match is None:
-        return None
-    tenant_lookup_methods = tuple(
-        dict.fromkeys(
-            match.group("method")
-            for match in _JAVA_TENANT_SCOPED_ID_LOOKUP_PATTERN.finditer(scannable_source)
-        )
-    )
-    if not tenant_lookup_methods:
-        return None
-    simple_name = interface_match.group("name")
-    package_name = package_match.group("name") if package_match is not None else ""
-    fqcn = f"{package_name}.{simple_name}" if package_name else simple_name
-    return _JavaRepositoryContract(
-        simple_name=simple_name,
-        fqcn=fqcn,
-        tenant_lookup_methods=tenant_lookup_methods,
-    )
 
 
-def _java_repository_field_contracts(
-    source: str, *, repository_contract_index: _JavaRepositoryContractIndex
-) -> dict[str, _JavaRepositoryContract]:
-    import_map = _java_import_map(source)
-    field_contracts: dict[str, _JavaRepositoryContract] = {}
-    for match in _JAVA_REPOSITORY_FIELD_PATTERN.finditer(source):
-        type_text = match.group("type")
-        contract = _resolve_java_repository_contract(
-            type_text,
-            import_map=import_map,
-            repository_contract_index=repository_contract_index,
-        )
-        if contract is None:
-            continue
-        field_contracts[match.group("name")] = contract
-    return field_contracts
 
 
-def _resolve_java_repository_contract(
-    type_text: str,
-    *,
-    import_map: dict[str, str],
-    repository_contract_index: _JavaRepositoryContractIndex,
-) -> _JavaRepositoryContract | None:
-    simple_name = type_text.rsplit(".", 1)[-1]
-    fqcn = type_text if "." in type_text else import_map.get(simple_name)
-    if fqcn is not None:
-        contract = repository_contract_index.by_fqcn.get(fqcn)
-        if contract is not None:
-            return contract
-    simple_name_matches = repository_contract_index.by_simple_name.get(simple_name, ())
-    if len(simple_name_matches) == 1:
-        return simple_name_matches[0]
-    return None
 
 
 def _java_import_map(source: str) -> dict[str, str]:
@@ -6872,45 +5949,6 @@ def _find_auth_fallback_to_privileged_user_findings(
     return findings
 
 
-def _find_notification_channel_split_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    scannable_source = _strip_java_comments(source)
-    findings: list[NormalizedFinding] = []
-    for context in _iter_java_method_contexts(scannable_source):
-        scannable_body = _strip_java_string_literals(context.body)
-        if not _JAVA_PUSH_NOTIFICATION_PATTERN.search(scannable_body):
-            continue
-        if _JAVA_IN_APP_NOTIFICATION_PATTERN.search(scannable_body):
-            continue
-        if changed_lines is not None and not any(
-            line in changed_lines for line in context.line_range
-        ):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "PUSH notification is sent without a corresponding "
-                    "IN_APP copy, breaking channel parity."
-                ),
-                location=FindingLocation(path=relative_path, line=context.line_range.start),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Also save an in-app notification or send the in-app copy alongside the push."
-                ),
-                metadata={
-                    "method_name": context.name,
-                },
-            )
-        )
-    return findings
 
 
 def _find_retry_without_reexecution_findings(
@@ -6964,39 +6002,6 @@ def _find_retry_without_reexecution_findings(
     return findings
 
 
-def _find_lob_bytea_mismatch_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    findings: list[NormalizedFinding] = []
-    for match in _JAVA_LOB_BYTEA_PATTERN.finditer(source):
-        line_range = _match_line_range(source, match.start(), match.end())
-        if changed_lines is not None and not any(line in changed_lines for line in line_range):
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "@Lob on byte[] without @JdbcTypeCode(Types.VARBINARY) "
-                    "risks OID vs bytea mismatch on PostgreSQL."
-                ),
-                location=FindingLocation(path=relative_path, line=line_range.start),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Add @JdbcTypeCode(Types.VARBINARY) to the byte[] field "
-                    "or verify the target column type."
-                ),
-                metadata={
-                    "access_pattern": "@Lob byte[]",
-                },
-            )
-        )
-    return findings
 
 
 def _find_duplicate_flyway_migration_version_findings(
@@ -7430,42 +6435,6 @@ def _find_requires_new_self_invocation_findings(
     return findings
 
 
-def _find_transactional_coalescing_for_long_running_work_findings(
-    *,
-    source: str,
-    relative_path: str,
-    changed_lines: frozenset[int] | None,
-    rule,
-    adapter_id: str,
-) -> list[NormalizedFinding]:
-    scannable_source = _strip_java_comments(source)
-    if not _JAVA_DISPATCH_COALESCING_TRANSACTIONAL_PATTERN.search(scannable_source):
-        return []
-    if not _JAVA_EVENT_LISTENER_CONTEXT_PATTERN.search(scannable_source):
-        return []
-    findings: list[NormalizedFinding] = []
-    for match in _JAVA_DISPATCH_COALESCING_TRANSACTIONAL_PATTERN.finditer(scannable_source):
-        line_number = scannable_source.count("\n", 0, match.start()) + 1
-        if changed_lines is not None and line_number not in changed_lines:
-            continue
-        findings.append(
-            NormalizedFinding.from_rule(
-                rule,
-                message=(
-                    "Transactional event listener uses dispatchCoalescingTransactional for work "
-                    "that may include long IO; prefer dispatchCoalescing outside the transaction."
-                ),
-                location=FindingLocation(path=relative_path, line=line_number),
-                adapter_id=adapter_id,
-                language=RepoLanguage.JAVA,
-                suggestion=(
-                    "Switch to dispatchCoalescing(...) in after-commit handlers for OCR or "
-                    "other long-running external work."
-                ),
-                metadata={"matched_pattern": "transactional-coalescing-long-running-work"},
-            )
-        )
-    return findings
 
 
 DEFAULT_ADAPTERS = (JavaAdapter(),)

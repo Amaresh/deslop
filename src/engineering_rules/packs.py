@@ -445,7 +445,7 @@ _DEFAULT_PACKS = (
         name="Backend maintainability guardrails v1",
         summary=(
             "Oversized Python and Java runtime surface guardrails based on the dominant backend "
-            "service patterns in sibling repos."
+            "service patterns in production backend codebases."
         ),
         rule_ids=(
             "python.maintainability.no-oversized-runtime-function",
@@ -572,7 +572,7 @@ _DEFAULT_PACKS = (
         ),
     ),
     RulePack(
-        pack_id="python-tenant-daemon-architecture-v1",
+        pack_id="python-background-supervision-v1",
         name="Python background supervision guardrails v1",
         summary=(
             "Daemon failure-sink guardrails for Python backend repos where long-lived "
@@ -583,7 +583,7 @@ _DEFAULT_PACKS = (
         ),
     ),
     RulePack(
-        pack_id="java-tenant-coordination-v1",
+        pack_id="java-spring-wiring-v1",
         name="Java Spring wiring guardrails v1",
         summary=(
             "Self-provider circular-wiring guardrails for Java service/workflow beans."
@@ -593,7 +593,7 @@ _DEFAULT_PACKS = (
         ),
     ),
     RulePack(
-        pack_id="web-tenant-boundary-v1",
+        pack_id="web-server-isolation-v1",
         name="Web server isolation guardrails v1",
         summary=(
             "Server-route tenant isolation guardrails for TypeScript web/admin repos."

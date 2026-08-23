@@ -14,7 +14,7 @@ metadata:
 
 # No external IO inside `@Transactional`
 
-Keep the transaction on persistence. Send WhatsApp, S3, RestClient, or payouts after commit (or from a non-transactional method).
+Keep the transaction on persistence. Send messaging-client, S3, RestClient, or payouts after commit (or from a non-transactional method).
 
 ## Do
 
@@ -23,7 +23,7 @@ Keep the transaction on persistence. Send WhatsApp, S3, RestClient, or payouts a
 void persistQueuedPaymentLink() { /* db only */ }
 
 void sendQueuedPaymentLink() {
-    messagingClient.send(phone, "whatsapp", "template");
+    messagingClient.send(phone, "sms", "template");
 }
 ```
 
@@ -32,7 +32,7 @@ void sendQueuedPaymentLink() {
 ```java
 @Transactional
 void processQueuedPaymentLink() {
-    messagingClient.send(phone, "whatsapp", "template");
+    messagingClient.send(phone, "sms", "template");
 }
 ```
 

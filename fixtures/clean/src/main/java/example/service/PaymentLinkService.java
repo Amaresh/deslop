@@ -15,7 +15,7 @@ class PaymentLinkService {
     void persistQueuedPaymentLink() {}
 
     void sendQueuedPaymentLink() {
-        messagingClient.send("917000000000", "whatsapp", "template");
+        messagingClient.send("+15550100432", "sms", "template");
     }
 }
 

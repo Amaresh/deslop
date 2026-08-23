@@ -1,4 +1,4 @@
-"""Shared paths and pack metadata for the Java skill-pack experiment."""
+"""Shared paths and pack metadata for the deslop Java/Spring pack."""
 
 from __future__ import annotations
 

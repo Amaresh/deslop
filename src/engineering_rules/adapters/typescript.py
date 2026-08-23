@@ -106,7 +106,6 @@ _EXPORT_PATTERN = re.compile(
 _ANY_CAST_PATTERN = re.compile(r"\bas\s+any\b")
 _DOUBLE_CAST_PATTERN = re.compile(r"\bas\s+unknown\s+as\s+[A-Za-z_$({\[]")
 _ANY_BOUNDARY_PATTERN = re.compile(r"(:\s*any\b|\([^)]*\bany\b[^)]*\)|=>\s*any\b)")
-_RECORD_UNKNOWN_PATTERN = re.compile(r"\bRecord\s*<\s*string\s*,\s*unknown\s*>\b")
 _RECORD_BOUNDARY_PATTERN = re.compile(
     r"(:\s*Record\s*<\s*string\s*,\s*unknown\s*>"
     r"(?![A-Za-z0-9_$])"
@@ -263,12 +262,6 @@ _MUTATION_CACHE_INVALIDATION_PATTERN = re.compile(
 )
 _REFETCH_INTERVAL_PATTERN = re.compile(r"\brefetchInterval\s*:")
 _PLACEHOLDER_DATA_PATTERN = re.compile(r"\b(?:placeholderData|keepPreviousData)\s*:")
-_CANARY_HEADING_ROLE_SELECTOR_PATTERN = re.compile(
-    r"\bgetByRole\s*\(\s*['\"]heading['\"]"
-)
-_CANARY_HEADING_LOCATOR_PATTERN = re.compile(
-    r"\blocator\s*\(\s*['\"]h[12][^'\"]*['\"]"
-)
 _ENCLOSING_FUNCTION_PATTERN = re.compile(
     r"(?m)(?:^|\n)\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s+[A-Za-z_$][\w$]*\s*\([^)]*\)\s*\{"
     r"|(?:^|\n)\s*(?:export\s+)?const\s+[A-Za-z_$][\w$]*\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{"
@@ -413,7 +406,6 @@ _WEB_BOUNDARY_SURFACE_BASENAMES = {
 }
 _WEB_TRANSPORT_LAYER_PARTS = {"api", "apis", "http", "network", "transport"}
 _WEB_TRANSPORT_SERVICE_PARTS = {"service", "services"}
-_WEB_TRANSPORT_FILENAME_TOKENS = ("client", "fetcher", "http", "request", "transport")
 _WEB_TRANSPORT_CLIENT_CO_TOKENS = {"api", "fetch", "http", "request", "transport"}
 _WEB_NORMALIZATION_LAYER_PARTS = {
     "codec",
@@ -582,23 +574,6 @@ _PATHNAME_ROUTE_CHECK_PATTERN = re.compile(
     r"[^;\n]{0,80}?(?:===|!==|startsWith\s*\()\s*"
     r"(?:\(?\s*)?(?P<quote>['\"`])(?P<route>/[^'\"`\n]+)(?P=quote)"
 )
-_SCOPE_ROUTE_CONTEXT_PATTERN = re.compile(r"\b(?:href|push|replace|redirect|pathname|route)\b")
-_ROUTE_CONTRACT_SCOPE_TOKENS = {
-    "branch",
-    "branches",
-    "org",
-    "orgs",
-    "organization",
-    "organizations",
-    "owner",
-    "owners",
-    "scope",
-    "scopes",
-    "tenant",
-    "tenants",
-    "workspace",
-    "workspaces",
-}
 _SCOPE_GUARD_TOKENS = {"branch", "owner", "scope", "tenant", "workspace"}
 _ROUTE_GUARD_FILENAME_TOKENS = ("guard", "scope", "branch", "tenant", "owner")
 _ROUTE_GUARD_SIGNAL_PATTERN = re.compile(
@@ -610,13 +585,6 @@ _TENANT_CONTEXT_ALLOWED_BASENAMES = {
     "middleware.tsx",
     "provider.tsx",
     "providers.tsx",
-}
-_TENANT_CONTEXT_ALLOWED_CONTAINER_PARTS = {
-    "bootstrap",
-    "context",
-    "contexts",
-    "provider",
-    "providers",
 }
 _TENANT_ROUTE_HELPER_PATTERN = re.compile(
     r"\b(?P<name>(?:resolve|get|derive|extract|load|parse)[A-Za-z0-9_$]*"
@@ -674,23 +642,6 @@ _ATOB_JWT_PAYLOAD_PATTERN = re.compile(
     r"\[\s*1\s*\][^)\n;]*\)",
     re.IGNORECASE,
 )
-_DIRECT_JWT_TENANT_DESTRUCTURE_PATTERN = re.compile(
-    r"\b(?:const|let|var)\s*\{\s*tenant(?:Id|Slug)?\s*(?::\s*[A-Za-z_$][A-Za-z0-9_$]*)?\s*\}"
-    r"\s*=\s*[^;\n]*(?:\b(?:jwt|jsonwebtoken)\s*\.\s*(?:decode|verify)\s*\(|"
-    r"\bJSON\.parse\s*\(\s*atob\s*\()",
-    re.IGNORECASE,
-)
-_DIRECT_JWT_TENANT_INLINE_ACCESS_PATTERN = re.compile(
-    r"(?:\b(?:jwt|jsonwebtoken)\s*\.\s*(?:decode|verify)\s*\(|"
-    r"\bJSON\.parse\s*\(\s*atob\s*\()[^;\n]{0,160}\.tenant(?:Id|Slug)?\b",
-    re.IGNORECASE,
-)
-_DIRECT_JWT_PAYLOAD_ASSIGNMENT_PATTERN = re.compile(
-    r"\b(?:const|let|var)\s+(?P<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*"
-    r"[^;\n]*(?:\b(?:jwt|jsonwebtoken)\s*\.\s*(?:decode|verify)\s*\(|"
-    r"\bJSON\.parse\s*\(\s*atob\s*\()",
-    re.IGNORECASE,
-)
 _AUTH_COOKIE_READ_PATTERN = re.compile(
     r"\b(?:cookies\s*\(\)|(?:request|req)\.cookies)\s*\.\s*get\s*\(\s*"
     r"(?P<quote>['\"`])(?:auth|access|id|jwt|session|token)[^'\"`\n]*(?P=quote)\s*\)",
@@ -704,11 +655,6 @@ _HOST_TENANT_RESOLUTION_SIGNAL_PATTERN = re.compile(
     r"\b(?:window|location)\.hostname\b"
     r"|\b(?:headers\s*\(\)|(?:request|req)\.headers)\s*\.\s*get\s*\(\s*['\"`]host['\"`]\s*\)"
     r"|\bnew\s+URL\s*\([^)]*\)\.hostname\b",
-    re.IGNORECASE,
-)
-_TENANT_FROM_HOST_HELPER_PATTERN = re.compile(
-    r"\b(?:resolve|get|derive|extract|load|parse|read)[A-Za-z0-9_$]*Tenant"
-    r"[A-Za-z0-9_$]*FromHost\b|\btenant[A-Za-z0-9_$]*FromHost\b",
     re.IGNORECASE,
 )
 _TENANT_SNAPSHOT_IDENTIFIER_PATTERN = re.compile(
@@ -760,11 +706,6 @@ _HEAVY_DEPENDENCY_IMPORT_PATTERN = re.compile(
     r"@ffmpeg/[^'\"]*|wavesurfer\.js|howler|tone"
     r")['\"]\s*;?"
 )
-_GRAND_TOTAL_SUBTRACTION_PATTERN = re.compile(
-    r"\b(?:grandTotal|grand_total|total|totalAmount|total_amount)\s*-\s*[^;\n]+",
-    re.IGNORECASE,
-)
-_INVOICE_ESTIMATE_FILE_PATTERN = re.compile(r"(?:invoice|estimate|quote|billing|breakdown|totals)")
 _EPHEMERAL_ID_PATTERN = re.compile(r"\b(?:uid\s*\(|crypto\.randomUUID\s*\(\)|useId\s*\(\))")
 _DEEP_LINK_FILE_PATTERN = re.compile(
     r"(?:link|deeplink|deep-link|url|query|param|router|navigation)"
@@ -4031,8 +3972,6 @@ def _should_skip_unused_export_path(path: str) -> bool:
     return Path(path).name in _SKIP_UNUSED_EXPORT_BASENAMES
 
 
-def _is_supported_ts_file(path: Path) -> bool:
-    return _is_supported_ts_path(path.name if not path.is_absolute() else path.as_posix())
 
 
 def _is_supported_ts_path(path: str) -> bool:
@@ -4541,12 +4480,6 @@ def _should_scan_react_stack_effect_path(path: str) -> bool:
     return not any(part in _REACT_STACK_EXCLUDED_PARTS for part in candidate.parts)
 
 
-def _should_scan_e2e_canary_path(path: str) -> bool:
-    normalized = path.replace("\\", "/")
-    candidate = Path(normalized)
-    if candidate.suffix.lower() not in {".ts", ".tsx"}:
-        return False
-    return "e2e" in {part.lower() for part in candidate.parts}
 
 
 def _extract_enclosing_function_scope(comment_masked_text: str, offset: int) -> str | None:
@@ -4949,16 +4882,6 @@ def _looks_like_shared_input_component_path(path: str) -> bool:
     return stem == "input" and "components" in lower_parts
 
 
-def _looks_like_app_server_api_route_path(path: str) -> bool:
-    normalized = path.replace("\\", "/")
-    candidate = Path(normalized)
-    lower_parts = {part.lower() for part in candidate.parts}
-    return (
-        candidate.name in _SERVER_ROUTE_BASENAMES
-        and "app" in lower_parts
-        and bool(lower_parts.intersection({"api", "server-api"}))
-        and not any(part.lower() in _WEB_BOUNDARY_EXCLUDED_PARTS for part in candidate.parts)
-    )
 
 
 def _looks_like_tenant_auth_boundary_path(path: str) -> bool:
@@ -5000,14 +4923,6 @@ def _is_allowed_tenant_context_surface_path(path: str) -> bool:
     return bool(stem_tokens.intersection({"provider", "providers"}) and has_tenant_signal)
 
 
-def _should_scan_tenant_context_surface_path(path: str, approved_paths: set[str]) -> bool:
-    normalized = path.replace("\\", "/")
-    candidate = Path(normalized)
-    if normalized in approved_paths or _is_allowed_tenant_context_surface_path(normalized):
-        return False
-    if candidate.name.endswith(_WEB_BOUNDARY_EXCLUDED_SUFFIXES):
-        return False
-    return not any(part.lower() in _WEB_BOUNDARY_EXCLUDED_PARTS for part in candidate.parts)
 
 
 def _has_tenant_auth_boundary_signal(document: _SourceDocument) -> bool:
@@ -5046,19 +4961,8 @@ def _tenant_auth_boundary_hint(signals: _TenantBoundarySignals) -> str:
     return "a shared auth boundary helper"
 
 
-def _tenant_context_boundary_hint(signals: _TenantBoundarySignals) -> str:
-    if signals.context_surface_paths:
-        return signals.context_surface_paths[0]
-    return "an approved tenant bootstrap/provider surface"
 
 
-def _describe_direct_jwt_source(text: str) -> str:
-    match = _DIRECT_JWT_LIBRARY_CALL_PATTERN.search(text)
-    if match is not None:
-        receiver = match.group("receiver").lower()
-        method = match.group("method").lower()
-        return f"{receiver}.{method}"
-    return "JSON.parse(atob(...))"
 
 
 def _iter_server_tenant_resolution_matches(text: str):
@@ -5082,88 +4986,8 @@ def _iter_server_tenant_resolution_matches(text: str):
             yield line, label, source
 
 
-def _iter_direct_jwt_tenant_derivation_matches(text: str):
-    seen: set[tuple[int, str, str]] = set()
-    direct_patterns = (
-        (_DIRECT_JWT_TENANT_DESTRUCTURE_PATTERN, "destructured-jwt-tenant-claim"),
-        (_DIRECT_JWT_TENANT_INLINE_ACCESS_PATTERN, "inline-jwt-tenant-access"),
-    )
-    for pattern, label in direct_patterns:
-        for match in pattern.finditer(text):
-            line = _line_for_offset(text, match.start())
-            source = _describe_direct_jwt_source(match.group(0))
-            key = (line, label, source)
-            if key in seen:
-                continue
-            seen.add(key)
-            yield line, label, source
-
-    for match in _DIRECT_JWT_PAYLOAD_ASSIGNMENT_PATTERN.finditer(text):
-        variable_name = match.group("name")
-        claim_access_pattern = re.compile(
-            rf"\b{re.escape(variable_name)}\s*\??\.\s*tenant(?:Id|Slug)?\b"
-            rf"|\b{re.escape(variable_name)}\s*\[\s*['\"`](?:tenant(?:Id|Slug)?)['\"`]\s*\]",
-            re.IGNORECASE,
-        )
-        if claim_access_pattern.search(text, match.end()) is None:
-            continue
-        line = _line_for_offset(text, match.start())
-        source = _describe_direct_jwt_source(match.group(0))
-        key = (line, "decoded-jwt-payload", source)
-        if key in seen:
-            continue
-        seen.add(key)
-        yield line, "decoded-jwt-payload", source
 
 
-def _iter_direct_tenant_context_access_matches(text: str):
-    seen: set[tuple[int, str, str]] = set()
-
-    for line, raw_line in enumerate(text.splitlines(), start=1):
-        line_text = raw_line.strip()
-        if not line_text:
-            continue
-
-        bootstrap_match = _TENANT_BOOTSTRAP_GLOBAL_PATTERN.search(line_text)
-        if bootstrap_match is not None:
-            source = re.sub(r"\s+", "", bootstrap_match.group(0))
-            key = (line, "bootstrap-global", source)
-            if key not in seen:
-                seen.add(key)
-                yield line, "bootstrap-global", source
-
-        host_helper_match = _TENANT_FROM_HOST_HELPER_PATTERN.search(line_text)
-        if host_helper_match is not None:
-            source = host_helper_match.group(0)
-            key = (line, "host-derived-tenant", source)
-            if key not in seen:
-                seen.add(key)
-                yield line, "host-derived-tenant", source
-        else:
-            host_signal_match = _HOST_TENANT_RESOLUTION_SIGNAL_PATTERN.search(line_text)
-            if host_signal_match is not None and "tenant" in line_text.lower():
-                source = re.sub(r"\s+", "", host_signal_match.group(0))
-                key = (line, "host-derived-tenant", source)
-                if key not in seen:
-                    seen.add(key)
-                    yield line, "host-derived-tenant", source
-
-        if bootstrap_match is not None:
-            continue
-        if "=" not in line_text and not line_text.startswith("return "):
-            continue
-        snapshot_match = _TENANT_SNAPSHOT_IDENTIFIER_PATTERN.search(line_text)
-        if snapshot_match is None:
-            continue
-        source = snapshot_match.group(0)
-        lowered_source = source.lower()
-        if lowered_source.endswith("provider") or lowered_source.endswith("context"):
-            continue
-        key = (line, "tenant-snapshot", source)
-        if key in seen:
-            continue
-        seen.add(key)
-        yield line, "tenant-snapshot", source
 
 
 def _has_transport_layer_signal(document: _SourceDocument) -> bool:
@@ -5693,33 +5517,6 @@ def _resolve_canonical_route_family(
     return None
 
 
-def _is_scope_sensitive_detail_route(route: str) -> bool:
-    canonical = route.split("?", 1)[0].split("#", 1)[0]
-    segments = [segment for segment in canonical.split("/") if segment]
-    if len(segments) < 4:
-        return False
-    dynamic_count = sum(
-        segment.startswith("${")
-        or segment.startswith("[")
-        or segment.startswith(":")
-        or "${" in segment
-        for segment in segments
-    )
-    if dynamic_count < 2:
-        return False
-    static_segments = [
-        segment.lower()
-        for segment in segments
-        if not (
-            segment.startswith("${")
-            or segment.startswith("[")
-            or segment.startswith(":")
-            or "${" in segment
-        )
-    ]
-    if not any(segment in _ROUTE_CONTRACT_SCOPE_TOKENS for segment in static_segments):
-        return False
-    return segments[-1].startswith("${") or segments[-1].startswith("[") or "${" in segments[-1]
 
 
 def _stem_tokens(path: str) -> tuple[str, ...]:

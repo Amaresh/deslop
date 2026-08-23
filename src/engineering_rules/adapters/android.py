@@ -203,25 +203,6 @@ _BOUNDARY_DIRECT_JAVA_DEPENDENCY_INSTANTIATION_PATTERN = re.compile(
     """,
     re.VERBOSE,
 )
-_KOTLIN_OBJECT_DECLARATION_PATTERN = re.compile(r"\bobject\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\b")
-_COMPANION_OBJECT_DECLARATION_PATTERN = re.compile(
-    r"\bcompanion\s+object(?:\s+[A-Za-z_][A-Za-z0-9_]*)?\b"
-)
-_KOTLIN_MUTABLE_STATIC_IDENTITY_FIELD_PATTERN = re.compile(
-    r"""
-    ^\s*(?:@Volatile\s+)?(?:private|internal|protected|public)?\s*
-    (?:lateinit\s+)?var\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\b
-    """,
-    re.VERBOSE,
-)
-_JAVA_MUTABLE_STATIC_IDENTITY_FIELD_PATTERN = re.compile(
-    r"""
-    ^\s*(?:public|protected|private)?\s*
-    static\s+(?:volatile\s+)?(?!final\b)
-    [A-Za-z_][A-Za-z0-9_<>,.?[\]]*\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:=|;)
-    """,
-    re.VERBOSE,
-)
 
 _UNSAFE_UI_TRIGGER_PATTERNS = (
     re.compile(r"\bGlobalScope\s*\.\s*launch\s*\(\s*Dispatchers\.Main"),
@@ -426,7 +407,7 @@ _VARIANT_OWNED_BUILD_CONFIG_EXACT_NAMES = {
     "WS_URL",
 }
 _VARIANT_OWNED_BUILD_CONFIG_NAME_PATTERN = re.compile(
-    r"^(?:[A-Z0-9_]*?(?:API|BASE|TENANT|SECRET|TOKEN|ENDPOINT|URL|KEYSTORE)[A-Z0-9_]*|SARVAM_API_KEY)$"
+    r"^[A-Z0-9_]*?(?:API|BASE|TENANT|SECRET|TOKEN|ENDPOINT|URL|KEYSTORE)[A-Z0-9_]*$"
 )
 _CONTRACT_ARTIFACT_NAME_PATTERNS = (
     re.compile(r"^api-docs\.json$", re.IGNORECASE),
@@ -463,14 +444,6 @@ _SEMANTIC_STATUS_TOKEN_PATTERN = re.compile(
 )
 _SEMANTIC_STATUS_WORD_PATTERN = re.compile(r"\b(?:status|badge|chip|tone)\b", re.IGNORECASE)
 _UI_ENTRYPOINT_FUNCTION_SUFFIXES = ("Route", "Screen")
-_STATIC_CONTEXT_GUARD_TOKENS = (
-    "@Volatile",
-    "volatile ",
-    "Atomic",
-    "Mutex",
-    "synchronized",
-    "ThreadLocal",
-)
 _BOUNDARY_CALLBACK_TEST_CLASS_CALLBACKS = (
     ("BroadcastReceiver", ("onReceive",)),
     ("JobIntentService", ("onHandleIntent", "onStartCommand")),
@@ -4005,133 +3978,20 @@ def _looks_like_transport_build_config_name(name: str) -> bool:
     )
 
 
-def _collect_unsafe_static_identity_fields(
-    repo_root: Path,
-) -> tuple[tuple[str, str, str], ...]:
-    fields: list[tuple[str, str, str]] = []
-    seen_keys: set[tuple[str, str]] = set()
-    for path in repo_root.rglob("*"):
-        if not path.is_file():
-            continue
-        relative_path = path.relative_to(repo_root).as_posix()
-        if not _is_android_source_path(repo_root, relative_path):
-            continue
-        lines = _read_lines(repo_root, relative_path)
-        sanitized_lines = _sanitize_code_lines(
-            lines,
-            preserve_kotlin_templates=path.suffix.lower() == ".kt",
-        )
-        for index in range(len(sanitized_lines)):
-            field_info = _unsafe_static_identity_field(sanitized_lines, index)
-            if field_info is None:
-                continue
-            owner_name, field_name = field_info
-            key = (owner_name, field_name)
-            if key in seen_keys:
-                continue
-            seen_keys.add(key)
-            fields.append((owner_name, field_name, relative_path))
-    return tuple(fields)
 
 
-def _unsafe_static_identity_field(lines: Sequence[str], index: int) -> tuple[str, str] | None:
-    line = lines[index]
-    kotlin_match = _KOTLIN_MUTABLE_STATIC_IDENTITY_FIELD_PATTERN.search(line)
-    java_match = _JAVA_MUTABLE_STATIC_IDENTITY_FIELD_PATTERN.search(line)
-    match = kotlin_match or java_match
-    if match is None:
-        return None
-    field_name = match.group("name")
-    if not _looks_like_static_identity_field_name(field_name):
-        return None
-    class_context = _enclosing_class_context(lines, index)
-    if class_context is None:
-        return None
-    owner_index, owner_name = class_context
-    if _looks_like_scoped_context_owner(owner_name):
-        return None
-    window = _window_text(
-        lines,
-        index,
-        before=min(2, max(0, index - owner_index)),
-        after=min(3, len(lines) - index - 1),
-    )
-    if _has_explicit_static_context_guard(window):
-        return None
-    if kotlin_match is not None and not _is_within_kotlin_singleton_scope(
-        lines,
-        index,
-        owner_index,
-    ):
-        return None
-    return owner_name, field_name
 
 
-def _is_within_kotlin_singleton_scope(lines: Sequence[str], index: int, owner_index: int) -> bool:
-    start = max(owner_index, index - 24)
-    for candidate_index in range(index, start - 1, -1):
-        if not _line_still_scopes_match(lines, candidate_index, index):
-            continue
-        candidate_line = lines[candidate_index]
-        if _COMPANION_OBJECT_DECLARATION_PATTERN.search(candidate_line) is not None:
-            return True
-        if _KOTLIN_OBJECT_DECLARATION_PATTERN.search(candidate_line) is not None:
-            return True
-    owner_window = _window_text(
-        lines,
-        owner_index,
-        before=0,
-        after=min(4, index - owner_index),
-    )
-    return _KOTLIN_OBJECT_DECLARATION_PATTERN.search(owner_window) is not None
 
 
-def _has_explicit_static_context_guard(window: str) -> bool:
-    return any(token in window for token in _STATIC_CONTEXT_GUARD_TOKENS)
 
 
-def _looks_like_static_identity_field_name(name: str) -> bool:
-    token_set = set(_normalized_identifier_tokens(name))
-    if not token_set:
-        return False
-    if "token" in token_set:
-        return True
-    if "tenant" in token_set and ("id" in token_set or "code" in token_set or len(token_set) == 1):
-        return True
-    if "branch" in token_set and ("id" in token_set or "code" in token_set or len(token_set) == 1):
-        return True
-    return "user" in token_set and ("id" in token_set or "code" in token_set)
 
 
-def _looks_like_scoped_context_owner(name: str) -> bool:
-    token_set = set(_normalized_identifier_tokens(name))
-    return bool({"context", "scope", "scoped", "owner", "provider"} & token_set)
 
 
-def _normalized_identifier_tokens(name: str) -> tuple[str, ...]:
-    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
-    normalized = normalized.replace("-", "_").lower()
-    return tuple(part for part in normalized.split("_") if part)
 
 
-def _iter_boundary_static_context_reads(
-    line: str,
-    unsafe_fields: Sequence[tuple[str, str, str]],
-) -> Iterable[tuple[str, str, str]]:
-    stripped = line.strip()
-    if stripped.startswith("import "):
-        return ()
-    matches: list[tuple[str, str, str]] = []
-    for owner_name, field_name, definition_path in unsafe_fields:
-        access_pattern = rf"\b{re.escape(owner_name)}\s*\.\s*{re.escape(field_name)}\b"
-        if re.search(access_pattern, line) is None:
-            continue
-        if re.search(rf"{access_pattern}\s*\(", line) is not None:
-            continue
-        if re.search(rf"{access_pattern}\s*(?:=(?!=)|\+=|-=|\*=|/=|%=)", line) is not None:
-            continue
-        matches.append((owner_name, field_name, definition_path))
-    return tuple(matches)
 
 
 def _looks_like_local_status_color_map(line: str, lines: Sequence[str], index: int) -> bool:
@@ -4724,8 +4584,6 @@ def _preferred_viewmodel_test_path(relative_path: str, viewmodel_name: str) -> s
     return _preferred_android_test_path(relative_path, f"{viewmodel_name}Test")
 
 
-def _viewmodel_test_candidate_paths(relative_path: str, viewmodel_name: str) -> tuple[str, ...]:
-    return _android_test_candidate_paths(relative_path, f"{viewmodel_name}Test")
 
 
 def _preferred_android_test_path(relative_path: str, test_stem: str) -> str | None:
