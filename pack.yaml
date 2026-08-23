@@ -16,7 +16,7 @@ frameworks:
 # Repos that already carry their own agent-rule setup; install refuses these
 # unless --force. Extend with your org's markers.
 collisions:
-  - .cursor/rules/garage-crm-java.mdc
+  - .cursor/rules/my-org-java-rules.mdc
 
 # checker: an agent-written sample already fails scripts/check.py.
 # teach-only: skill may teach it; CI must not fail on it yet.

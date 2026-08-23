@@ -235,7 +235,7 @@ def test_deslop_review_and_check() -> None:
     assert payload["pack_frameworks"] == ["spring", "jpa"]
 
 
-def test_install_refuses_garage_crm_shaped_repo(tmp_path: Path) -> None:
+def test_install_refuses_existing_rules_marker_repo(tmp_path: Path) -> None:
     marker = tmp_path / ".cursor" / "skills" / "engineering-rules" / "SKILL.md"
     marker.parent.mkdir(parents=True)
     marker.write_text("---\nname: engineering-rules\n---\n", encoding="utf-8")
