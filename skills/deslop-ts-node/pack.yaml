@@ -1,0 +1,56 @@
+pack_id: deslop-ts-node-v1
+version: "0.1.0"
+invocation: explicit
+install_namespace: deslop
+
+# Skills-only pack: no engine detectors exist for these rules yet, so nothing
+# is gated. Promote a rule to the root engine.rule_ids only once an
+# agent-written sample fails scripts/check.py.
+engine:
+  rule_ids: []
+
+frameworks:
+  - node
+  - react
+  - express
+
+# Repos that already carry their own agent-rule setup; install refuses these
+# unless --force. Extend with your org's markers.
+collisions:
+  - .cursor/rules/my-org-typescript-rules.mdc
+
+# checker: an agent-written sample already fails scripts/check.py.
+# teach-only: skill may teach it; CI must not fail on it yet.
+skills:
+  - name: no-floating-promises
+    rule_id: typescript.reliability.no-floating-promises
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-fetch-without-abort-timeout
+    rule_id: typescript.http.no-fetch-without-abort-timeout
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-empty-catch-in-express-handlers
+    rule_id: typescript.express.no-empty-catch-in-route-handler
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-unvalidated-env-at-module-top-level
+    rule_id: typescript.node.no-unvalidated-env-at-module-top-level
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-unguarded-json-parse-on-external-input
+    rule_id: typescript.reliability.no-unguarded-json-parse-on-external-input
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-non-null-array-index
+    rule_id: typescript.strictness.no-non-null-array-index-access
+    globs: "**/*.ts"
+    enforcement: teach-only
+  - name: no-mixed-controlled-react-inputs
+    rule_id: typescript.react.no-mixed-controlled-uncontrolled-inputs
+    globs: "**/*.tsx"
+    enforcement: teach-only
+  - name: no-setinterval-without-clear
+    rule_id: typescript.reliability.no-setinterval-without-clear
+    globs: "**/*.ts"
+    enforcement: teach-only

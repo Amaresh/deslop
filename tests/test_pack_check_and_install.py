@@ -17,6 +17,7 @@ from pack_lib import (
     checker_rule_ids,
     engine_rule_ids,
     invariant_skill_dirs,
+    load_all_packs,
     load_pack,
     teach_only_rule_ids,
 )
@@ -33,14 +34,15 @@ REST_TEMPLATE = (
 
 def test_invariant_skills_are_explicit_invoke() -> None:
     names: list[str] = []
-    for skill_dir in invariant_skill_dirs():
-        text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
-        frontmatter = yaml.safe_load(text.split("---", 2)[1])
-        assert frontmatter["disable-model-invocation"] is True
-        assert frontmatter["name"] == skill_dir.name
-        names.append(frontmatter["name"])
-        assert "do not use for" in frontmatter["description"].lower()
-    assert len(names) == len(set(names)) == 3
+    for pack in load_all_packs():
+        for skill_dir in invariant_skill_dirs(pack_id=pack["pack_id"]):
+            text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+            frontmatter = yaml.safe_load(text.split("---", 2)[1])
+            assert frontmatter["disable-model-invocation"] is True
+            assert frontmatter["name"] == skill_dir.name
+            names.append(frontmatter["name"])
+            assert "do not use for" in frontmatter["description"].lower()
+    assert len(names) == len(set(names)) == 19
 
 
 def test_service_globs_overlap_so_those_skills_stay_explicit() -> None:

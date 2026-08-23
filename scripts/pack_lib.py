@@ -110,8 +110,42 @@ def skill_dirs() -> tuple[Path, ...]:
     return tuple(sorted(path for path in SKILLS_ROOT.iterdir() if path.is_dir()))
 
 
-def invariant_skill_dirs() -> tuple[Path, ...]:
-    return tuple(path for path in skill_dirs() if path.name != PACK_INDEX_NAME)
+def parse_skill_frontmatter(skill_dir: Path) -> dict[str, Any]:
+    text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        return {}
+    _, fm, _ = text.split("---", 2)
+    return yaml.safe_load(fm) or {}
+
+
+def _skill_pack_id(skill_dir: Path) -> str | None:
+    metadata = parse_skill_frontmatter(skill_dir).get("metadata") or {}
+    return metadata.get("pack")
+
+
+def _is_pack_index(skill_dir: Path) -> bool:
+    metadata = parse_skill_frontmatter(skill_dir).get("metadata") or {}
+    return metadata.get("kind") == "pack-index"
+
+
+def all_pack_yamls() -> tuple[Path, ...]:
+    """Root pack.yaml plus per-pack pack.yaml files under skills/."""
+
+    nested = sorted(SKILLS_ROOT.glob("*/pack.yaml"))
+    return tuple([PACK_YAML, *nested])
+
+
+def load_all_packs() -> list[dict[str, Any]]:
+    return [yaml.safe_load(path.read_text(encoding="utf-8")) for path in all_pack_yamls()]
+
+
+def invariant_skill_dirs(pack_id: str | None = None) -> tuple[Path, ...]:
+    wanted = pack_id if pack_id is not None else load_pack()["pack_id"]
+    return tuple(
+        path
+        for path in skill_dirs()
+        if not _is_pack_index(path) and _skill_pack_id(path) == wanted
+    )
 
 
 def pack_index_dir() -> Path:
