@@ -1,0 +1,7 @@
+---
+description: @Transactional service methods must not call HTTP, S3, or messaging clients.
+globs: "**/*Service.java"
+alwaysApply: false
+---
+
+Do not call outbound clients from `@Transactional` (non-readOnly) service methods. Persist first; send after commit. Explicit-invoke companion to skill `no-transactional-external-io`. Not about RestTemplate construction.

@@ -1,0 +1,29 @@
+# Copy into a consuming repo. Point `deslop-pack` at a vendored checkout of
+# experiment-java-skill-pack (or the later production pack). Not a hosted Action.
+#
+# The engine must be importable: in this sandbox, scripts/ci.sh uses
+# isolated-engineering-rules/.venv. In CI, pip-install that package (or set
+# ENGINE_PYTHON to a venv that already has it) before calling ci.sh.
+name: deslop pack check
+
+on:
+  pull_request:
+
+jobs:
+  deslop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install engineering-rules engine
+        run: pip install -e ./isolated-engineering-rules
+
+      - name: Run pack checker
+        env:
+          FORMAT: json
+          ENGINE_PYTHON: python3
+        run: bash experiment-java-skill-pack/scripts/ci.sh "$GITHUB_WORKSPACE"

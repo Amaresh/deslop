@@ -1,0 +1,6 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>example</groupId>
+  <artifactId>clean-fixture</artifactId>
+  <version>0.0.1</version>
+</project>

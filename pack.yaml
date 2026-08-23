@@ -1,0 +1,35 @@
+pack_id: deslop-java-spring-v1
+version: "0.1.0"
+invocation: explicit
+install_namespace: deslop
+
+engine:
+  rule_ids:
+    - java.reliability.no-jpql-null-or-lower-on-optional-filter
+    - java.architecture.no-service-layer-transactional-external-io
+    - java.architecture.no-service-layer-rest-template-without-timeout-shaping
+
+frameworks:
+  - spring
+  - jpa
+
+# Repos that already carry their own agent-rule setup; install refuses these
+# unless --force. Extend with your org's markers.
+collisions:
+  - .cursor/rules/garage-crm-java.mdc
+
+# checker: an agent-written sample already fails scripts/check.py.
+# teach-only: skill may teach it; CI must not fail on it yet.
+skills:
+  - name: no-jpql-null-or-lower
+    rule_id: java.reliability.no-jpql-null-or-lower-on-optional-filter
+    globs: "**/*Repository.java"
+    enforcement: checker
+  - name: no-transactional-external-io
+    rule_id: java.architecture.no-service-layer-transactional-external-io
+    globs: "**/*Service.java"
+    enforcement: teach-only
+  - name: no-rest-template-without-timeout
+    rule_id: java.architecture.no-service-layer-rest-template-without-timeout-shaping
+    globs: "**/*Service.java"
+    enforcement: teach-only

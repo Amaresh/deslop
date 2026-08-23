@@ -1,0 +1,7 @@
+---
+description: JPQL optional filters must not use IS NULL OR with LOWER. Repository @Query only.
+globs: "**/*Repository.java"
+alwaysApply: false
+---
+
+Do not write `:param IS NULL OR` together with `LOWER(...)` in Spring Data `@Query` JPQL. Use an empty-string sentinel (`:param = ''`) instead. Explicit-invoke companion to skill `no-jpql-null-or-lower`.

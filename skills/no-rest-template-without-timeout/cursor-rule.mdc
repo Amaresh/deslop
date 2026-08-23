@@ -1,0 +1,7 @@
+---
+description: Service-layer new RestTemplate() must set a request factory with timeouts.
+globs: "**/*Service.java"
+alwaysApply: false
+---
+
+Do not leave `new RestTemplate()` without `setRequestFactory` timeout shaping. Explicit-invoke companion to skill `no-rest-template-without-timeout`. Not about transactional messaging/S3 calls.
