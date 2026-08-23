@@ -26,7 +26,7 @@ behind the first one.
 ## Quickstart
 
 ```bash
-git clone https://github.com/stopTheSlop/deslop && cd deslop
+git clone https://github.com/Amaresh/deslop && cd deslop
 pip install -e .            # engine + deps (pydantic, PyYAML)
 
 # Inspect the pack (writes nothing)
