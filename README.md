@@ -75,3 +75,25 @@ must not fail on it.
 ## License
 
 MIT
+
+## deslop learn — extract the rules a codebase already follows
+
+`deslop learn` measures the conventions a repository actually follows (and
+the ones it keeps violating), then emits candidate rules with evidence:
+
+```bash
+python3 scripts/learn.py --repo /path/to/repo --lang go --out learn-out
+```
+
+- **Tier 1:** deterministic counters per stack (Go, Python, TypeScript,
+  Java) — adoption ratios for conventions like context-first handlers,
+  `%w` error wrapping, timeout-shaped HTTP clients, parameterized SQL,
+  `response_model` presence, `any` density.
+- **Tier 2:** an agent induction pass proposes house conventions the
+  counters can't see — every proposal must cite ≥3 real file:line locations.
+
+Candidates flow into the same honesty rails as everything else: teach-only
+until verified against agent-written violations.
+
+> Learn is the "find rules" counterpart to "apply rules": point it at a
+> repo and it tells you what that repo would teach a new contributor.
