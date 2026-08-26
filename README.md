@@ -11,14 +11,14 @@ deterministic checker on the subset with verified detectors.
 ```mermaid
 flowchart LR
   subgraph beforeWrite [Before the agent writes]
-    A["Your repo"] --> B["deslop pack skills"]
-    B --> C["Agent reads matching rule"]
-    C --> D["Code follows the invariant"]
+    A["Your repo"] --> B["deslop skills"]
+    B --> C["Agent reads rule"]
+    C --> D["Code follows it"]
   end
   subgraph afterSlip [If it still slips]
-    D --> E["deslop check in CI"]
-    E -->|"checker finding"| F["Build fails"]
-    E -->|"teach-only"| G["Warning only, never a red build"]
+    D --> E["deslop check"]
+    E -->|"checker"| F["Build fails"]
+    E -->|"teach-only"| G["Warn only"]
   end
 ```
 
@@ -36,12 +36,12 @@ Three packs ship in this repo. `deslop learn` also profiles **Go**.
 ```mermaid
 flowchart TB
   subgraph available [What you can use today]
-    J["Java / Spring - install plus 1 CI gate"]
-    P["Python / FastAPI - 8 teach skills"]
-    T["TypeScript / Node / React - 8 teach skills"]
+    J["Java / Spring<br/>install + 1 CI gate"]
+    P["Python / FastAPI<br/>8 teach skills"]
+    T["TypeScript / Node<br/>8 teach skills"]
   end
   subgraph discover [What you can measure]
-    L["deslop learn - Go, Python, TypeScript, Java"]
+    L["deslop learn<br/>Go, Python, TS, Java"]
   end
   available --> discover
 ```
@@ -62,11 +62,11 @@ evidence behind the first Java checker.
 
 ```mermaid
 flowchart TD
-  I["Invariant - a property that must always hold"] --> S["Skill file in the pack"]
-  S --> T["teach-only - agent may read it, CI must not fail"]
+  I["Must always hold"] --> S["Skill in the pack"]
+  S --> T["teach-only"]
   T --> D["Detector exists"]
-  D --> V["Independent agent sample fails the detector"]
-  V --> C["checker - CI fails the build"]
+  D --> V["Agent sample fails<br/>the detector"]
+  V --> C["checker<br/>CI fails the build"]
   T -.->|"no detector yet"| Stay["Stays teach-only"]
 ```
 
@@ -114,12 +114,12 @@ All teach-only. Pack index: [`skills/deslop-ts-node`](skills/deslop-ts-node/SKIL
 
 ```mermaid
 flowchart TD
-  Clone["Clone Amaresh/deslop"] --> Pick{"Which stack?"}
-  Pick -->|"Java / Spring"| Inst["deslop install into your-repo"]
-  Pick -->|"Python / FastAPI"| CopyP["Copy the Python pack skills"]
-  Pick -->|"TypeScript / Node"| CopyT["Copy the TypeScript pack skills"]
-  Inst --> CI["ci.sh fails only on checker rules"]
-  CopyP --> Agent["Agent reads the pack-index skill"]
+  Clone["Clone deslop"] --> Pick{"Which stack?"}
+  Pick -->|"Java / Spring"| Inst["deslop install"]
+  Pick -->|"Python / FastAPI"| CopyP["Copy Python skills"]
+  Pick -->|"TypeScript / Node"| CopyT["Copy TS skills"]
+  Inst --> CI["CI gates checkers"]
+  CopyP --> Agent["Agent reads pack"]
   CopyT --> Agent
 ```
 
@@ -176,10 +176,10 @@ python3 scripts/learn.py --repo /path/to/repo --lang go --out learn-out
 
 ```mermaid
 flowchart TD
-  R["Repository"] --> T1["Tier 1 - deterministic counters"]
-  T1 --> T2["Tier 2 - agent induction"]
-  T2 --> C["Candidates with at least 3 file-line cites"]
-  C --> H["teach-only until a detector catches an agent-written violation"]
+  R["Repository"] --> T1["Tier 1 counters"]
+  T1 --> T2["Tier 2 induction"]
+  T2 --> C["Candidates + cites"]
+  C --> H["teach-only until<br/>a detector catches it"]
 ```
 
 Learn is the "find rules" counterpart to "apply rules": point it at a repo
