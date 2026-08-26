@@ -43,5 +43,8 @@ where the next agent-added call site silently drops it.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack python --rule python.http.no-httpx-client-without-explicit-timeout
+```

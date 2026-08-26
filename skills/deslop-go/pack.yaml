@@ -1,0 +1,56 @@
+pack_id: deslop-go-v1
+version: "0.1.0"
+invocation: explicit
+lang: go
+
+engine:
+  rule_ids: []
+
+mine:
+  rule_ids:
+    - go.security.no-plain-string-secret-comparison
+    - go.security.no-dynamic-sql-execution
+    - go.architecture.no-handler-detached-goroutine
+    - go.architecture.no-handler-direct-sql-execution
+    - go.architecture.no-handler-direct-outbound-http
+    - go.architecture.no-handler-rooted-background-context
+    - go.reliability.no-nullable-column-scanned-as-plain-value
+    - go.security.no-websocket-upgrader-checkorigin-allow-all
+
+frameworks:
+  - net/http
+  - database/sql
+
+skills:
+  - name: no-plain-string-secret-comparison
+    rule_id: go.security.no-plain-string-secret-comparison
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-go-dynamic-sql-execution
+    rule_id: go.security.no-dynamic-sql-execution
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-handler-detached-goroutine
+    rule_id: go.architecture.no-handler-detached-goroutine
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-handler-direct-sql-execution
+    rule_id: go.architecture.no-handler-direct-sql-execution
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-handler-direct-outbound-http
+    rule_id: go.architecture.no-handler-direct-outbound-http
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-handler-rooted-background-context
+    rule_id: go.architecture.no-handler-rooted-background-context
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-nullable-column-scanned-as-plain-value
+    rule_id: go.reliability.no-nullable-column-scanned-as-plain-value
+    globs: "**/*.go"
+    enforcement: checker
+  - name: no-websocket-upgrader-checkorigin-allow-all
+    rule_id: go.security.no-websocket-upgrader-checkorigin-allow-all
+    globs: "**/*.go"
+    enforcement: checker

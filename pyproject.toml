@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deslop-engine"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic engineering-rules checker engine used by the deslop packs."
 readme = "README.md"
 requires-python = ">=3.11"

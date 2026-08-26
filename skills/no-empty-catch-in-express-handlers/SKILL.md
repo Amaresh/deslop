@@ -55,5 +55,8 @@ the error middleware, never a silent `{}`.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack ts --rule typescript.express.no-empty-catch-in-route-handler
+```

@@ -1,4 +1,4 @@
-"""Shared paths and pack metadata for the deslop Java/Spring pack."""
+"""Shared paths and pack metadata for deslop packs."""
 
 from __future__ import annotations
 
@@ -47,7 +47,18 @@ def load_pack() -> dict[str, Any]:
 
 def engine_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
     data = pack if pack is not None else load_pack()
-    return tuple(data["engine"]["rule_ids"])
+    return tuple((data.get("engine") or {}).get("rule_ids") or ())
+
+
+def mine_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
+    data = pack if pack is not None else load_pack()
+    mine = data.get("mine") or {}
+    return tuple(mine.get("rule_ids") or ())
+
+
+def check_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
+    data = pack if pack is not None else load_pack()
+    return tuple(dict.fromkeys([*engine_rule_ids(data), *mine_rule_ids(data)]))
 
 
 def skill_enforcement_map(pack: dict[str, Any] | None = None) -> dict[str, str]:
@@ -75,9 +86,9 @@ def skill_enforcement_map(pack: dict[str, Any] | None = None) -> dict[str, str]:
                 "enforcement must be checker|teach-only: " + ", ".join(invalid)
             )
         raise SystemExit("; ".join(parts))
-    for rule_id in engine_rule_ids(data):
+    for rule_id in check_rule_ids(data):
         if rule_id not in mapping:
-            raise SystemExit(f"engine rule {rule_id} has no skill enforcement")
+            raise SystemExit(f"check rule {rule_id} has no skill enforcement")
     return mapping
 
 
@@ -86,7 +97,7 @@ def checker_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
     mapping = skill_enforcement_map(data)
     return tuple(
         rule_id
-        for rule_id in engine_rule_ids(data)
+        for rule_id in check_rule_ids(data)
         if mapping[rule_id] == ENFORCEMENT_CHECKER
     )
 
@@ -96,7 +107,7 @@ def teach_only_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
     mapping = skill_enforcement_map(data)
     return tuple(
         rule_id
-        for rule_id in engine_rule_ids(data)
+        for rule_id in check_rule_ids(data)
         if mapping[rule_id] == ENFORCEMENT_TEACH_ONLY
     )
 
@@ -104,6 +115,25 @@ def teach_only_rule_ids(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
 def pack_frameworks(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
     data = pack if pack is not None else load_pack()
     return tuple(data.get("frameworks") or ())
+
+
+PACK_ALIASES = {
+    "java": "deslop-java-spring-v1",
+    "python": "deslop-python-fastapi-v1",
+    "ts": "deslop-ts-node-v1",
+    "typescript": "deslop-ts-node-v1",
+    "go": "deslop-go-v1",
+    "android": "deslop-android-v1",
+}
+
+
+def load_pack_by_id(pack_id: str) -> dict[str, Any]:
+    wanted = PACK_ALIASES.get(pack_id, pack_id)
+    for path in all_pack_yamls():
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if data and data.get("pack_id") == wanted:
+            return data
+    raise SystemExit(f"unknown pack {pack_id!r}")
 
 
 def skill_dirs(skills_root: Path | None = None) -> tuple[Path, ...]:

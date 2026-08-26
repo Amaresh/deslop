@@ -54,5 +54,8 @@ KeyError: pass` on a cache lookup, not `except Exception` on a payment call.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack python --rule python.reliability.no-except-exception-pass-swallow
+```

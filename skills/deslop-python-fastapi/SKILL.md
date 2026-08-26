@@ -15,14 +15,17 @@ metadata:
 
 Do not apply every section. Match the file in front of you.
 
-Every rule in this pack is teach-only until an agent-written sample fails
-`scripts/check.py`. No engine detectors exist for these rules yet.
+Eight rules are CI-gated (`enforcement: checker`): blocking IO in `async def`,
+httpx timeout, `except Exception: pass`, dynamic SQL, unguarded `request.json`,
+raw PII logs, HTTP client construction in routes, and `requests` without timeout.
+The rest of this pack is still teach-only.
 
 ## `**/routes.py`, `**/api/**/*.py` (async handlers)
 
 Do not call sync blocking IO (`requests`, `time.sleep`, sync DB drivers,
 `boto3`) inside `async def`. Use `httpx.AsyncClient`, `asyncio.sleep`, or
-`run_in_executor`.
+`run_in_executor`. Do not construct `httpx.AsyncClient` inside the route —
+inject it from lifespan.
 
 ## `**/clients.py`, any `httpx.AsyncClient(...)`
 
@@ -36,24 +39,22 @@ re-raise.
 
 ## `**/db.py`, `**/repositories.py`
 
-Do not build SQL with f-strings or `.format()`. Use bound parameters.
+Do not execute SQL built with f-strings or concatenation. Use bound parameters.
 
 ## `**/models.py`, `**/schemas.py` (Pydantic)
 
 Do not mutate validated model fields after construction to sneak values past
-validators. Validate the value you actually want.
+validators. Validate the value you actually want. (Teach-only.)
 
 ## `**/tasks.py`, anywhere `asyncio.create_task(` appears
 
-Keep a reference to the task and handle cancellation. Bare fire-and-forget
-tasks are silently garbage collected and swallow errors.
+Keep a reference to the task and handle cancellation. (Teach-only.)
 
 ## `**/config.py`, `**/settings.py`
 
 Do not bake secrets as default values in settings classes or function
-signatures.
+signatures. (Teach-only.)
 
 ## Route decorators (`@router.get(` etc.)
 
-Declare `response_model=` (or return annotated response types). Omitting it
-leaks internal columns and ORM internals into API responses.
+Declare `response_model=` (or return annotated response types). (Teach-only.)

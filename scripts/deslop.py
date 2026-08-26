@@ -10,11 +10,17 @@ from pathlib import Path
 from check import main as check_main
 from export import export_pack
 from install import install, rollback
-from pack_lib import PACK_INDEX_NAME, PACK_ROOT, load_pack, pack_frameworks
+from pack_lib import PACK_INDEX_NAME, PACK_ROOT, load_all_packs, load_pack, pack_frameworks
 
 
 def _add_check_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--pack",
+        action="append",
+        default=[],
+        help="Pack id or alias (java, python, ts, go, android). Repeatable.",
+    )
     parser.add_argument("--rule", action="append", default=[])
     parser.add_argument("--changed-file", action="append", default=[])
     parser.add_argument("--format", choices=("text", "json"), default="text")
@@ -24,16 +30,17 @@ def _add_check_args(parser: argparse.ArgumentParser) -> None:
 
 
 def _review() -> int:
-    pack = load_pack()
-    print(f"pack_id: {pack['pack_id']}")
-    print(f"version: {pack['version']}")
-    print(f"frameworks: {', '.join(pack_frameworks(pack)) or '-'}")
-    print("skills:")
-    for skill in pack["skills"]:
-        print(
-            f"  - {skill['name']}  {skill['enforcement']}  "
-            f"{skill['rule_id']}  {skill['globs']}"
-        )
+    for pack in load_all_packs():
+        print(f"pack_id: {pack['pack_id']}")
+        print(f"version: {pack.get('version', '-')}")
+        print(f"frameworks: {', '.join(pack_frameworks(pack)) or '-'}")
+        print("skills:")
+        for skill in pack.get("skills") or []:
+            print(
+                f"  - {skill['name']}  {skill['enforcement']}  "
+                f"{skill['rule_id']}  {skill['globs']}"
+            )
+        print()
     print("Accept or reject in pack.yaml. This command does not write.")
     return 0
 
@@ -89,6 +96,8 @@ def main(argv: list[str] | None = None) -> int:
             "--format",
             args.format,
         ]
+        for pack in args.pack:
+            sys.argv.extend(["--pack", pack])
         for rule in args.rule:
             sys.argv.extend(["--rule", rule])
         for path in args.changed_file:

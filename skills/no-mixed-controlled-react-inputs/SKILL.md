@@ -10,7 +10,7 @@ disable-model-invocation: true
 license: MIT
 metadata:
   pack: deslop-ts-node-v1
-  engine_rule_id: typescript.react.no-mixed-controlled-uncontrolled-inputs
+  engine_rule_id: typescript.react.no-mixed-controlled-uncontrolled
   globs: "**/*.tsx"
 ---
 
@@ -49,12 +49,17 @@ const emailRef = useRef<HTMLInputElement>(null);
 ## Do not
 
 ```tsx
-<input value={email} placeholder="you@example.com" /> {/* frozen field */}
-<input defaultValue={email} onChange={(e) => setEmail(e.target.value)} />
-{/* mixing both worlds; value drifts from state */}
+<input value={email} defaultValue="" onChange={(e) => setEmail(e.target.value)} />
 ```
+
+Do not set both `value` and `defaultValue` (or `checked` and `defaultChecked`)
+on the same node. Pick one. A `value` without `onChange` is also a frozen
+field; CI flags the both-props case.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack ts --rule typescript.react.no-mixed-controlled-uncontrolled
+```

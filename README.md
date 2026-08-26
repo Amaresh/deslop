@@ -1,8 +1,8 @@
 # deslop
 
 Rules your coding agents read **before** they write code — across
-**Java/Spring**, **Python/FastAPI**, and **TypeScript/Node/React**. CI
-gates the patterns we can *prove* agents emit.
+**Java/Spring**, **Python/FastAPI**, **TypeScript/Node/React**, **Go**,
+and **Android**. CI gates the patterns we can *prove* agents emit.
 
 Most tools comment on a pull request after the damage is done. deslop
 puts a small pack of invariants in the agent's context first, then runs a
@@ -24,21 +24,25 @@ flowchart LR
 
 ## Stacks
 
-Three packs ship in this repo. `deslop learn` also profiles **Go**.
+Five packs ship in this repo. `deslop learn` also profiles **Go**.
 
 | Pack | Languages / frameworks | Rules | CI today |
 |---|---|---|---|
-| [`deslop-java-spring`](skills/deslop-java-spring/SKILL.md) | Java, Spring, JPA | 3 | **3 checkers** |
-| [`deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 8 | teach-only |
-| [`deslop-ts-node`](skills/deslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 8 | teach-only |
+| [`deslop-java-spring`](skills/deslop-java-spring/SKILL.md) | Java, Spring, JPA | 11 | **11 checkers** |
+| [`deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 13 | **8 checkers**, 5 teach-only |
+| [`deslop-ts-node`](skills/deslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 12 | **8 checkers**, 4 teach-only |
+| [`deslop-go`](skills/deslop-go/SKILL.md) | Go, net/http, database/sql | 8 | **8 checkers** |
+| [`deslop-android`](skills/deslop-android/SKILL.md) | Kotlin, Android, Compose | 3 | **3 checkers** |
 | `deslop learn` | Go, Python, TypeScript, Java | — | measures conventions; does not install a pack |
 
 ```mermaid
 flowchart TB
   subgraph available [What you can use today]
-    J["Java / Spring<br/>install + 3 CI gates"]
-    P["Python / FastAPI<br/>8 teach skills"]
-    T["TypeScript / Node<br/>8 teach skills"]
+    J["Java / Spring<br/>install + 11 CI gates"]
+    P["Python / FastAPI<br/>8 CI gates + 5 teach"]
+    T["TypeScript / Node<br/>8 CI gates + 4 teach"]
+    G["Go<br/>8 CI gates"]
+    A["Android<br/>3 CI gates"]
   end
   subgraph discover [What you can measure]
     L["deslop learn<br/>Go, Python, TS, Java"]
@@ -47,18 +51,19 @@ flowchart TB
 ```
 
 `deslop install` writes the **Java/Spring** pack-index into a target repo.
-Python and TypeScript packs live as skills here — copy the pack-index
-directory plus its `no-*` skills into your agent's layout (see
+Python, TypeScript, Go, and Android packs live as skills here — copy the
+pack-index directory plus its `no-*` skills into your agent's layout (see
 [Using a pack](#using-a-pack)). Multi-pack install is not wired yet; do
 not pretend `deslop install` drops FastAPI or Node rules into a repo.
+
+`deslop check` **does** run every pack whose language is present in the
+repo. Pass `--pack python` (or `ts`, `go`, `android`, `java`) to scope it.
 
 ## How a rule reaches CI
 
 An invariant is a property that must always hold. Every rule starts as
 **teach-only** (steering). It becomes **checker** after a detector exists
-and OSS benches show **0 unjustified false positives**. See
-[docs/composer-experiment.md](docs/composer-experiment.md) for the
-agent-sample evidence behind the first Java checker.
+and OSS benches show **0 unjustified false positives**.
 
 ```mermaid
 flowchart TD
@@ -70,45 +75,97 @@ flowchart TD
   T -.->|"no detector yet"| Stay["Stays teach-only"]
 ```
 
+The gated checkers are portable AST detectors under `checkers/`. They are
+not Motorrad house rules (no web-layer folder names, no service-locator
+bans, no blanket `no-use-effect`). The original three Java engine rules
+(JPQL, RestTemplate timeouts, `@Transactional` IO) stay on the Java
+engine so existing CI keeps the same findings.
+
 ## Pack contents
 
 ### Java / Spring
 
 | Rule | Enforcement | Invariant |
 |---|---|---|
-| `no-jpql-null-or-lower` | **checker** | No `:param IS NULL OR` combined with `LOWER` on optional JPQL filters; use an empty-string sentinel |
-| `no-transactional-external-io` | **checker** | No HTTP / S3 / messaging inside `@Transactional`; persist, commit, then send |
+| `no-jpql-null-or-lower` | **checker** | No `:param IS NULL OR` combined with `LOWER` on optional JPQL filters |
+| `no-transactional-external-io` | **checker** | No HTTP / S3 / messaging inside `@Transactional` |
 | `no-rest-template-without-timeout` | **checker** | No `new RestTemplate()` without `setRequestFactory` timeout shaping |
+| `no-n-plus-one-without-entity-graph` | **checker** | No collection finder + lazy to-many in a loop without a fetch graph |
+| `no-query-string-concatenation` | **checker** | No JPQL/SQL built with `+` concatenation |
+| `no-file-upload-without-validation` | **checker** | Uploads get size/type checks |
+| `no-secret-fallback-literal` | **checker** | No secret string fallback when env is missing |
+| `no-java-raw-pii-logging` | **checker** | No raw email/phone in logs |
+| `no-eager-to-many-fetch` | **checker** | No `FetchType.EAGER` on to-many associations |
+| `no-controller-direct-repository-access` | **checker** | Controllers do not inject repositories |
+| `no-unbounded-findall-without-pagination` | **checker** | No unbounded `findAll()` on a request path |
+
+Java AST checkers need **JDK 21** (`javac` / `java`). JavaParser is fetched
+once and SHA-256 pinned.
 
 ### Python / FastAPI
 
-All teach-only. Pack index: [`skills/deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md).
+Pack index: [`skills/deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md).
 
-| Rule | Invariant |
-|---|---|
-| `no-sync-blocking-io-in-async-route` | No sync blocking I/O inside `async def` routes |
-| `no-httpx-asyncclient-without-timeout` | `httpx.AsyncClient` gets an explicit `timeout=` |
-| `no-except-exception-pass` | No `except Exception: pass` |
-| `no-fstring-sql-interpolation` | Bound parameters, not f-string SQL |
-| `no-post-validation-model-mutation` | Do not mutate Pydantic fields after validation |
-| `no-fire-and-forget-task-without-cancellation` | Keep a reference; handle cancellation |
-| `no-secret-defaults-in-settings` | No secrets as settings / signature defaults |
-| `no-route-without-response-model` | Declare `response_model=` (or annotated responses) |
+| Rule | Enforcement | Invariant |
+|---|---|---|
+| `no-sync-blocking-io-in-async-route` | **checker** | No sync blocking I/O inside `async def` routes |
+| `no-httpx-asyncclient-without-timeout` | **checker** | `httpx.AsyncClient` gets an explicit `timeout=` |
+| `no-except-exception-pass` | **checker** | No `except Exception: pass` |
+| `no-dynamic-sql-execution` | **checker** | Bound parameters, not f-string / concat SQL |
+| `no-route-request-json-without-invalid-json-guard` | **checker** | Guard `request.json` on untrusted bodies |
+| `no-raw-pii-logging` | **checker** | No raw email/phone in logs |
+| `no-request-layer-outbound-client-construction` | **checker** | Do not construct HTTP clients inside routes |
+| `no-requests-call-without-timeout` | **checker** | Every `requests` call has `timeout=` |
+| `no-fstring-sql-interpolation` | teach-only | Prefer bound parameters (overlap with dynamic SQL) |
+| `no-post-validation-model-mutation` | teach-only | Do not mutate Pydantic fields after validation |
+| `no-fire-and-forget-task-without-cancellation` | teach-only | Keep a reference; handle cancellation |
+| `no-secret-defaults-in-settings` | teach-only | No secrets as settings / signature defaults |
+| `no-route-without-response-model` | teach-only | Declare `response_model=` |
 
 ### TypeScript / Node / React
 
-All teach-only. Pack index: [`skills/deslop-ts-node`](skills/deslop-ts-node/SKILL.md).
+Pack index: [`skills/deslop-ts-node`](skills/deslop-ts-node/SKILL.md).
+Needs **Node + npm** (TypeScript parser under `checkers/tsast`).
 
-| Rule | Invariant |
-|---|---|
-| `no-floating-promises` | Await or explicitly handle every promise |
-| `no-fetch-without-abort-timeout` | Pair `fetch` with an abort timeout |
-| `no-empty-catch-in-express-handlers` | Catch, log, and return an error response |
-| `no-unvalidated-env-at-module-top-level` | Lazy, validated env — not `process.env.X ?? ""` at import |
-| `no-unguarded-json-parse-on-external-input` | Guard `JSON.parse` on external text |
-| `no-non-null-array-index` | Bounds-check; do not silence `noUncheckedIndexedAccess` with `!` |
-| `no-mixed-controlled-react-inputs` | Controlled or uncontrolled, never mixed |
-| `no-setinterval-without-clear` | Store the handle and clear it on cleanup |
+| Rule | Enforcement | Invariant |
+|---|---|---|
+| `no-fetch-without-abort-timeout` | **checker** | Pair `fetch` with an abort timeout |
+| `no-empty-catch-in-express-handlers` | **checker** | Catch, log, and return an error response |
+| `no-unguarded-json-parse-on-external-input` | **checker** | Guard `JSON.parse` on external text |
+| `no-mixed-controlled-react-inputs` | **checker** | Controlled or uncontrolled, never mixed |
+| `no-unvalidated-external-href` | **checker** | Allowlist `http(s)` before `href={expr}` |
+| `no-orphaned-effect-timeouts` | **checker** | Clear effect timers on cleanup |
+| `no-eager-heavy-dependency-import` | **checker** | Do not statically import lodash/moment-class libs |
+| `no-or-default-for-nonzero-number` | **checker** | Do not `n \|\| 20` when 0 is valid |
+| `no-floating-promises` | teach-only | Await or handle every promise (needs types) |
+| `no-unvalidated-env-at-module-top-level` | teach-only | Lazy, validated env |
+| `no-non-null-array-index` | teach-only | Bounds-check; do not silence with `!` |
+| `no-setinterval-without-clear` | teach-only | Store the handle and clear it |
+
+### Go
+
+Pack index: [`skills/deslop-go`](skills/deslop-go/SKILL.md). Needs **Go 1.21+**.
+
+| Rule | Enforcement | Invariant |
+|---|---|---|
+| `no-plain-string-secret-comparison` | **checker** | Constant-time secret compare |
+| `no-go-dynamic-sql-execution` | **checker** | Bound parameters, not `fmt.Sprintf` SQL |
+| `no-handler-detached-goroutine` | **checker** | No detached `go` from a handler |
+| `no-handler-direct-sql-execution` | **checker** | Handlers do not run SQL |
+| `no-handler-direct-outbound-http` | **checker** | Handlers do not `http.Get` |
+| `no-handler-rooted-background-context` | **checker** | Use `r.Context()`, not `context.Background()` |
+| `no-nullable-column-scanned-as-plain-value` | **checker** | Scan nullable columns into `sql.Null*` |
+| `no-websocket-upgrader-checkorigin-allow-all` | **checker** | `CheckOrigin` must not always return true |
+
+### Android
+
+Pack index: [`skills/deslop-android`](skills/deslop-android/SKILL.md).
+
+| Rule | Enforcement | Invariant |
+|---|---|---|
+| `no-hardcoded-secret-literals` | **checker** | No API keys as string literals |
+| `no-unscoped-boundary-coroutine` | **checker** | No `GlobalScope` at UI boundaries |
+| `no-runblocking-hotpath` | **checker** | No `runBlocking` on the UI path |
 
 ## Using a pack
 
@@ -118,24 +175,34 @@ flowchart TD
   Pick -->|"Java / Spring"| Inst["deslop install"]
   Pick -->|"Python / FastAPI"| CopyP["Copy Python skills"]
   Pick -->|"TypeScript / Node"| CopyT["Copy TS skills"]
-  Inst --> CI["CI gates checkers"]
-  CopyP --> Agent["Agent reads pack"]
-  CopyT --> Agent
+  Pick -->|"Go"| CopyG["Copy Go skills"]
+  Pick -->|"Android"| CopyA["Copy Android skills"]
+  Inst --> CI["deslop check"]
+  CopyP --> CI
+  CopyT --> CI
+  CopyG --> CI
+  CopyA --> CI
 ```
 
-### Java / Spring (install + CI)
+### Check any stack (CI)
 
 ```bash
 git clone https://github.com/Amaresh/deslop && cd deslop
 pip install -e .            # engine + deps (pydantic, PyYAML)
 
-# Inspect the Java pack (writes nothing)
+# Inspect packs (writes nothing)
 python3 scripts/deslop.py review
 
-# Check any Java/Spring repo for checker-rule violations
+# Auto-detect languages in the repo and gate their checkers
 python3 scripts/deslop.py check --repo-root /path/to/your/repo
 
-# Install into a target repo (refuses if it already has agent rules; --force to override)
+# Or pin a pack
+python3 scripts/deslop.py check --repo-root /path/to/your/repo --pack python
+```
+
+### Java / Spring (install + CI)
+
+```bash
 python3 scripts/deslop.py install --target /path/to/your/repo
 ```
 
@@ -150,19 +217,22 @@ scripts/ci.sh /path/to/your/repo   # exit 1 on checker findings only
 ```
 
 See [`ci/github-action.yml.example`](ci/github-action.yml.example) for a
-GitHub Actions setup.
+GitHub Actions setup (Python plus JDK / Node / Go when those stacks are
+present).
 
-### Python or TypeScript (skills in this repo)
+### Python, TypeScript, Go, or Android (skills in this repo)
 
 There is no `deslop install --pack python` yet. To steer an agent:
 
-1. Copy the pack-index folder (`skills/deslop-python-fastapi/` or
-   `skills/deslop-ts-node/`).
+1. Copy the pack-index folder (`skills/deslop-python-fastapi/`,
+   `skills/deslop-ts-node/`, `skills/deslop-go/`, or
+   `skills/deslop-android/`).
 2. Copy each `skills/no-*` directory listed in that pack's `pack.yaml`.
 3. Point your harness at those skills the same way you would any other
    SKILL.md pack.
 
-CI will not fail on these rules until they earn `checker` status.
+`deslop check --pack <alias>` still gates the checker rules even if you
+never install the skills.
 
 ## deslop learn — extract the rules a codebase already follows
 
@@ -194,8 +264,8 @@ and it tells you what that repo would teach a new contributor.
   depends on your harness; discovery behavior varies.
 - Teach rules are not gates and must not be sold as gates.
 - Not "works on any Spring / FastAPI / Node repo." Packs are small and
-  specific. Three Java rules are CI-gated; Python and TypeScript packs
-  still steer only.
+  specific. Java, Python, TypeScript, Go, and Android each gate the
+  subset with 0 unjustified OSS false positives.
 
 ## License
 

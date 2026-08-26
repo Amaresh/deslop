@@ -62,5 +62,8 @@ not an accident of leaving `async` on.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack python --rule python.asyncio.no-sync-blocking-io-in-async-def-route
+```

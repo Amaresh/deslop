@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
-"""Enforce the pack: run the existing Java engine, not the SKILL.md files."""
+"""Enforce packs: Java engine rules plus portable AST checkers."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from pack_lib import (
+    PACK_ROOT,
     checker_rule_ids,
+    check_rule_ids,
     collision_hits,
     engine_rule_ids,
     format_collision_report,
+    load_all_packs,
     load_pack,
+    load_pack_by_id,
+    mine_rule_ids,
     pack_frameworks,
     prefer_engine_src,
     skill_enforcement_map,
@@ -22,21 +28,38 @@ from pack_lib import (
 )
 
 prefer_engine_src()
+sys.path.insert(0, str(PACK_ROOT / "checkers"))
 
 from engineering_rules.engine import RulesEngine  # noqa: E402
 from engineering_rules.models import ExecutionMode, RunSource  # noqa: E402
 
+from run import CheckFinding, run_mine  # noqa: E402
+
+
+@dataclass
+class CombinedResult:
+    findings: tuple[Any, ...]
+    coverage: Any = None
+    repo_profile: Any = None
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run deterministic checks for deslop-java-spring-v1."
+        description="Run deterministic checks for selected deslop packs."
     )
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--pack",
+        action="append",
+        default=[],
+        help="Pack id or alias (java, python, ts, go, android). Repeatable. "
+        "Default: packs whose languages are present in the repo.",
+    )
     parser.add_argument(
         "--rule",
         action="append",
         default=[],
-        help="Limit to one engine rule id (repeatable). Default: all pack rules.",
+        help="Limit to one rule id (repeatable). Default: all selected pack rules.",
     )
     parser.add_argument(
         "--changed-file",
@@ -63,22 +86,114 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _looks_java_project(repo: Path) -> bool:
+    return (
+        (repo / "pom.xml").exists()
+        or (repo / "build.gradle").exists()
+        or (repo / "build.gradle.kts").exists()
+    )
+
+
+def _has_glob(repo: Path, pattern: str) -> bool:
+    return next(repo.rglob(pattern), None) is not None
+
+
+def _repo_matches_lang(repo: Path, lang: str) -> bool:
+    if lang == "java":
+        return _has_glob(repo, "*.java") or _looks_java_project(repo)
+    if lang == "python":
+        return (
+            _has_glob(repo, "*.py")
+            or (repo / "pyproject.toml").exists()
+            or (repo / "requirements.txt").exists()
+        )
+    if lang == "ts":
+        return (
+            _has_glob(repo, "*.ts")
+            or _has_glob(repo, "*.tsx")
+            or ((repo / "package.json").exists() and not _looks_java_project(repo))
+        )
+    if lang == "go":
+        return _has_glob(repo, "*.go") or (repo / "go.mod").exists()
+    if lang == "android":
+        return _has_glob(repo, "*.kt") or _has_glob(repo, "*.kts")
+    return False
+
+
+def select_packs(repo: Path, pack_args: Sequence[str]) -> list[dict[str, Any]]:
+    if pack_args:
+        if any(arg == "all" for arg in pack_args):
+            return load_all_packs()
+        return [load_pack_by_id(arg) for arg in pack_args]
+    matched = [
+        pack
+        for pack in load_all_packs()
+        if _repo_matches_lang(repo, str(pack.get("lang") or ""))
+    ]
+    return matched or [load_pack()]
+
+
+def _merge_enforcement(packs: Sequence[dict[str, Any]]) -> dict[str, str]:
+    merged: dict[str, str] = {}
+    for pack in packs:
+        merged.update(skill_enforcement_map(pack))
+    return merged
+
+
 def run_check(
     *,
     repo_root: Path,
     rule_ids: list[str] | None = None,
     changed_files: list[str] | None = None,
     override_path: Path | None = None,
+    packs: list[dict[str, Any]] | None = None,
 ):
-    selected = tuple(rule_ids) if rule_ids else engine_rule_ids()
-    mode = ExecutionMode.DIFF if changed_files else ExecutionMode.INVENTORY
-    return RulesEngine().run(
-        repo_root=repo_root,
-        mode=mode,
-        source=RunSource.LOCAL,
-        changed_files=changed_files or None,
-        selected_rule_ids=selected,
-        override_path=override_path,
+    selected_packs = packs if packs is not None else select_packs(repo_root, ())
+    allowed: list[str] = []
+    for pack in selected_packs:
+        allowed.extend(check_rule_ids(pack))
+    allowed_unique = tuple(dict.fromkeys(allowed))
+    selected = tuple(rule_ids) if rule_ids else allowed_unique
+
+    engine_ids = [
+        rid
+        for rid in selected
+        if any(rid in engine_rule_ids(pack) for pack in selected_packs)
+    ]
+    mine_ids = [
+        rid
+        for rid in selected
+        if any(rid in mine_rule_ids(pack) for pack in selected_packs)
+    ]
+
+    findings: list[Any] = []
+    coverage = None
+    repo_profile = None
+    if engine_ids:
+        mode = ExecutionMode.DIFF if changed_files else ExecutionMode.INVENTORY
+        engine_result = RulesEngine().run(
+            repo_root=repo_root,
+            mode=mode,
+            source=RunSource.LOCAL,
+            changed_files=changed_files or None,
+            selected_rule_ids=tuple(engine_ids),
+            override_path=override_path,
+        )
+        findings.extend(engine_result.findings)
+        coverage = getattr(engine_result, "coverage", None)
+        repo_profile = getattr(engine_result, "repo_profile", None)
+    if mine_ids:
+        findings.extend(
+            run_mine(
+                repo_root=repo_root,
+                rule_ids=mine_ids,
+                changed_files=changed_files,
+            )
+        )
+    return CombinedResult(
+        findings=tuple(findings),
+        coverage=coverage,
+        repo_profile=repo_profile,
     )
 
 
@@ -100,27 +215,32 @@ def _repo_frameworks(result: Any) -> list[str]:
 
 
 def _finding_payload(finding: Any, enforcement: str) -> dict[str, Any]:
+    location = finding.location
+    path = None if location is None else location.path
     return {
         "rule_id": finding.rule_id,
         "enforcement": enforcement,
-        "path": None if finding.location is None else finding.location.path,
+        "path": path,
         "message": finding.message,
     }
 
 
 def build_report(
     *,
-    pack: dict[str, Any],
+    packs: Sequence[dict[str, Any]],
     repo_root: Path,
     selected: list[str],
     result: Any,
     report_collisions: bool,
     fail_on_teach_only: bool,
 ) -> dict[str, Any]:
-    enforcement = skill_enforcement_map(pack)
+    enforcement = _merge_enforcement(packs)
     findings = [finding for finding in result.findings if not finding.waived]
-    gate_ids = set(checker_rule_ids(pack))
-    teach_ids = set(teach_only_rule_ids(pack))
+    gate_ids: set[str] = set()
+    teach_ids: set[str] = set()
+    for pack in packs:
+        gate_ids.update(checker_rule_ids(pack))
+        teach_ids.update(teach_only_rule_ids(pack))
     gate_findings = [
         finding for finding in findings if enforcement.get(finding.rule_id) == "checker"
     ]
@@ -132,13 +252,22 @@ def build_report(
     not_covered = [rule_id for rule_id in selected if rule_id in teach_ids]
     collisions = collision_hits(repo_root) if report_collisions else ()
     blocking = findings if fail_on_teach_only else gate_findings
-    required = pack_frameworks(pack)
-    detected = {item.lower() for item in _repo_frameworks(result)}
-    uncovered_pack_frameworks = [
-        name for name in required if name.lower() not in detected
-    ]
+    required: list[str] = []
+    for pack in packs:
+        required.extend(pack_frameworks(pack))
+    required_unique = list(dict.fromkeys(required))
+    coverage_payload = _coverage_payload(result)
+    if coverage_payload is None:
+        uncovered_pack_frameworks: list[str] = []
+    else:
+        detected = {item.lower() for item in _repo_frameworks(result)}
+        uncovered_pack_frameworks = [
+            name for name in required_unique if name.lower() not in detected
+        ]
+    pack_ids = [pack["pack_id"] for pack in packs]
     return {
-        "pack_id": pack["pack_id"],
+        "pack_id": pack_ids[0] if len(pack_ids) == 1 else "+".join(pack_ids),
+        "pack_ids": pack_ids,
         "passed": not blocking,
         "finding_count": len(blocking),
         "gate_finding_count": len(gate_findings),
@@ -146,7 +275,7 @@ def build_report(
         "rule_ids": selected,
         "enforcement": {rule_id: enforcement[rule_id] for rule_id in selected},
         "not_covered": not_covered,
-        "pack_frameworks": list(required),
+        "pack_frameworks": required_unique,
         "uncovered_pack_frameworks": uncovered_pack_frameworks,
         "coverage": _coverage_payload(result),
         "collisions": list(collisions),
@@ -194,22 +323,29 @@ def _print_text(report: dict[str, Any], repo_root: Path, report_collisions: bool
 
 def main() -> int:
     args = _parse_args()
-    pack = load_pack()
-    allowed = set(engine_rule_ids(pack))
+    packs = select_packs(args.repo_root, args.pack)
+    allowed = set()
+    for pack in packs:
+        allowed.update(check_rule_ids(pack))
     selected = args.rule or list(allowed)
     unknown = [rule_id for rule_id in selected if rule_id not in allowed]
     if unknown:
         print(f"Unknown pack rule ids: {', '.join(unknown)}", file=sys.stderr)
         return 2
 
-    result = run_check(
-        repo_root=args.repo_root,
-        rule_ids=selected,
-        changed_files=args.changed_file or None,
-        override_path=args.override_file,
-    )
+    try:
+        result = run_check(
+            repo_root=args.repo_root,
+            rule_ids=selected,
+            changed_files=args.changed_file or None,
+            override_path=args.override_file,
+            packs=packs,
+        )
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     report = build_report(
-        pack=pack,
+        packs=packs,
         repo_root=args.repo_root,
         selected=selected,
         result=result,

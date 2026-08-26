@@ -54,5 +54,8 @@ HTML error pages from proxies arrive as text and parse as nothing.
 
 ## Enforce
 
-This skill is teach-only. No engine detector exists yet; CI must not fail on
-it.
+CI gates this rule (`enforcement: checker`):
+
+```bash
+python3 scripts/check.py --repo-root . --pack ts --rule typescript.reliability.no-unguarded-json-parse-on-external-input
+```

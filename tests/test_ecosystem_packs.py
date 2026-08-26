@@ -1,17 +1,26 @@
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+
 import yaml
 from pack_lib import (
     SKILLS_ROOT,
     all_pack_yamls,
+    check_rule_ids,
     invariant_skill_dirs,
     load_all_packs,
     load_pack,
+    load_pack_by_id,
+    mine_rule_ids,
 )
 
 ECOSYSTEM_PACK_IDS = {
     "deslop-python-fastapi": "deslop-python-fastapi-v1",
     "deslop-ts-node": "deslop-ts-node-v1",
+    "deslop-go": "deslop-go-v1",
+    "deslop-android": "deslop-android-v1",
 }
 
 
@@ -25,25 +34,30 @@ def test_ecosystem_packs_declare_pack_yaml() -> None:
         assert "install_namespace" not in data
         assert "collisions" not in data
         assert data["engine"]["rule_ids"] == []
-        assert len(data["skills"]) == 8
+        assert mine_rule_ids(data)
 
 
-def test_ecosystem_skills_are_all_teach_only() -> None:
-    packs = {data["pack_id"]: data for data in load_all_packs()}
-    root_engine_rules = set(load_pack()["engine"]["rule_ids"])
-    for pack_id in ECOSYSTEM_PACK_IDS.values():
-        for skill in packs[pack_id]["skills"]:
-            assert skill["enforcement"] == "teach-only"
-            rule_id = skill["rule_id"]
-            assert rule_id not in root_engine_rules
-        names = [skill["name"] for skill in packs[pack_id]["skills"]]
-        assert len(names) == len(set(names)) == 8
+def test_python_and_ts_keep_some_teach_only() -> None:
+    python = load_pack_by_id("python")
+    ts_pack = load_pack_by_id("ts")
+    assert {s["enforcement"] for s in python["skills"]} == {"checker", "teach-only"}
+    assert {s["enforcement"] for s in ts_pack["skills"]} == {"checker", "teach-only"}
+    assert len(mine_rule_ids(python)) == 8
+    assert len(mine_rule_ids(ts_pack)) == 8
+
+
+def test_go_and_android_are_all_checkers() -> None:
+    for alias, count in (("go", 8), ("android", 3)):
+        pack = load_pack_by_id(alias)
+        assert all(skill["enforcement"] == "checker" for skill in pack["skills"])
+        assert len(mine_rule_ids(pack)) == count
+        assert set(check_rule_ids(pack)) == set(mine_rule_ids(pack))
 
 
 def test_ecosystem_skill_dirs_belong_to_their_pack() -> None:
     for pack_dir, pack_id in ECOSYSTEM_PACK_IDS.items():
         skills = invariant_skill_dirs(pack_id=pack_id)
-        assert len(skills) == 8
+        assert skills
         for skill_dir in skills:
             text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
             frontmatter = yaml.safe_load(text.split("---", 2)[1])
@@ -62,12 +76,14 @@ def test_java_tooling_stays_scoped_to_java_pack() -> None:
 
 def test_every_rule_has_a_bad_and_good_code_pair() -> None:
     for pack_dir in ECOSYSTEM_PACK_IDS:
-        for skill_dir in sorted((SKILLS_ROOT / pack_dir).iterdir()):
-            if not skill_dir.is_dir():
-                continue
+        pack = yaml.safe_load(
+            (SKILLS_ROOT / pack_dir / "pack.yaml").read_text(encoding="utf-8")
+        )
+        for skill in pack["skills"]:
+            skill_dir = SKILLS_ROOT / skill["name"]
             text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
-            assert "## Do" in text, skill_dir.name
-            assert "## Do not" in text, skill_dir.name
+            assert "## Do" in text, skill["name"]
+            assert "## Do not" in text, skill["name"]
 
 
 def test_missing_pack_metadata_is_fatal(tmp_path) -> None:
@@ -83,3 +99,10 @@ def test_missing_pack_metadata_is_fatal(tmp_path) -> None:
         assert "orphan-skill" in str(exc)
         return
     raise AssertionError("expected SystemExit for missing metadata.pack")
+
+
+def test_load_pack_aliases() -> None:
+    assert load_pack_by_id("java")["pack_id"] == "deslop-java-spring-v1"
+    assert load_pack_by_id("python")["pack_id"] == "deslop-python-fastapi-v1"
+    packs = {data["pack_id"] for data in load_all_packs()}
+    assert packs >= set(ECOSYSTEM_PACK_IDS.values()) | {"deslop-java-spring-v1"}

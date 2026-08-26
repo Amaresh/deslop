@@ -15,6 +15,7 @@ from pack_lib import (
     PACK_INDEX_NAME,
     PACK_ROOT,
     checker_rule_ids,
+    check_rule_ids,
     engine_rule_ids,
     invariant_skill_dirs,
     load_all_packs,
@@ -42,7 +43,7 @@ def test_invariant_skills_are_explicit_invoke() -> None:
             assert frontmatter["name"] == skill_dir.name
             names.append(frontmatter["name"])
             assert "do not use for" in frontmatter["description"].lower()
-    assert len(names) == len(set(names)) == 19
+    assert len(names) == len(set(names))
 
 
 def test_service_globs_overlap_so_those_skills_stay_explicit() -> None:
@@ -57,7 +58,7 @@ def test_service_globs_overlap_so_those_skills_stay_explicit() -> None:
 
 
 def test_dirty_fixture_fails_on_all_engine_rules() -> None:
-    result = run_check(repo_root=DIRTY)
+    result = run_check(repo_root=DIRTY, rule_ids=list(engine_rule_ids()))
     fired = {finding.rule_id for finding in result.findings}
     assert fired == set(engine_rule_ids())
 
@@ -67,9 +68,10 @@ def test_clean_fixture_has_no_findings() -> None:
     assert result.findings == ()
 
 
-def test_all_java_pack_rules_are_checkers() -> None:
-    assert set(checker_rule_ids()) == set(engine_rule_ids())
+def test_all_java_pack_check_rules_are_checkers() -> None:
+    assert set(checker_rule_ids()) == set(check_rule_ids())
     assert teach_only_rule_ids() == ()
+    assert set(engine_rule_ids()) < set(check_rule_ids())
 
 
 def test_check_cli_exit_codes() -> None:

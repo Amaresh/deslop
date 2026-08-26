@@ -1,0 +1,9 @@
+{
+  "name": "tsast-facts",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript compiler API facts extractor for deslop detectors (no typecheck)",
+  "dependencies": {
+    "typescript": "^5.8.3"
+  }
+}

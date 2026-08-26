@@ -1,13 +1,25 @@
 pack_id: deslop-java-spring-v1
-version: "0.2.0"
+version: "0.3.0"
 invocation: explicit
 install_namespace: deslop
+lang: java
 
 engine:
   rule_ids:
     - java.reliability.no-jpql-null-or-lower-on-optional-filter
     - java.architecture.no-service-layer-transactional-external-io
     - java.architecture.no-service-layer-rest-template-without-timeout-shaping
+
+mine:
+  rule_ids:
+    - java.performance.no-n-plus-one-without-entity-graph
+    - java.jpa.no-query-string-concatenation
+    - java.correctness.no-file-upload-without-validation
+    - java.security.no-secret-fallback-literal
+    - java.security.no-raw-pii-logging
+    - java.performance.no-eager-to-many-fetch
+    - java.architecture.no-controller-direct-repository-access
+    - java.reliability.no-unbounded-findall-without-pagination
 
 frameworks:
   - spring
@@ -32,4 +44,36 @@ skills:
   - name: no-rest-template-without-timeout
     rule_id: java.architecture.no-service-layer-rest-template-without-timeout-shaping
     globs: "**/*Service.java"
+    enforcement: checker
+  - name: no-n-plus-one-without-entity-graph
+    rule_id: java.performance.no-n-plus-one-without-entity-graph
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-query-string-concatenation
+    rule_id: java.jpa.no-query-string-concatenation
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-file-upload-without-validation
+    rule_id: java.correctness.no-file-upload-without-validation
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-secret-fallback-literal
+    rule_id: java.security.no-secret-fallback-literal
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-java-raw-pii-logging
+    rule_id: java.security.no-raw-pii-logging
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-eager-to-many-fetch
+    rule_id: java.performance.no-eager-to-many-fetch
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-controller-direct-repository-access
+    rule_id: java.architecture.no-controller-direct-repository-access
+    globs: "**/*Controller.java"
+    enforcement: checker
+  - name: no-unbounded-findall-without-pagination
+    rule_id: java.reliability.no-unbounded-findall-without-pagination
+    globs: "**/*.java"
     enforcement: checker

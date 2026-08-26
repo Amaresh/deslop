@@ -1,19 +1,30 @@
 pack_id: deslop-ts-node-v1
-version: "0.1.0"
+version: "0.2.0"
 invocation: explicit
+lang: ts
 
-# Catalog + pack-index only. install.py / export.py read the root pack.yaml
-# (Java). Nested collisions/install_namespace were unused config and are gone.
+# Catalog + pack-index. install.py still writes the Java pack-index only.
 
 engine:
   rule_ids: []
+
+mine:
+  rule_ids:
+    - typescript.http.no-fetch-without-abort-timeout
+    - typescript.express.no-empty-catch-in-route-handler
+    - typescript.reliability.no-unguarded-json-parse-on-external-input
+    - typescript.react.no-mixed-controlled-uncontrolled
+    - typescript.security.no-unvalidated-external-href
+    - typescript.ui.no-orphaned-effect-timeouts
+    - typescript.performance.no-eager-heavy-dependency-import
+    - typescript.correctness.no-or-default-for-nonzero-number
 
 frameworks:
   - node
   - react
   - express
 
-# checker: an agent-written sample already fails scripts/check.py.
+# checker: portable AST detector, 0 unjustified OSS FPs; CI fails.
 # teach-only: skill may teach it; CI must not fail on it yet.
 skills:
   - name: no-floating-promises
@@ -23,11 +34,11 @@ skills:
   - name: no-fetch-without-abort-timeout
     rule_id: typescript.http.no-fetch-without-abort-timeout
     globs: "**/*.ts"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-empty-catch-in-express-handlers
     rule_id: typescript.express.no-empty-catch-in-route-handler
     globs: "**/*.ts"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-unvalidated-env-at-module-top-level
     rule_id: typescript.node.no-unvalidated-env-at-module-top-level
     globs: "**/*.ts"
@@ -35,16 +46,32 @@ skills:
   - name: no-unguarded-json-parse-on-external-input
     rule_id: typescript.reliability.no-unguarded-json-parse-on-external-input
     globs: "**/*.ts"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-non-null-array-index
     rule_id: typescript.strictness.no-non-null-array-index-access
     globs: "**/*.ts"
     enforcement: teach-only
   - name: no-mixed-controlled-react-inputs
-    rule_id: typescript.react.no-mixed-controlled-uncontrolled-inputs
+    rule_id: typescript.react.no-mixed-controlled-uncontrolled
     globs: "**/*.tsx"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-setinterval-without-clear
     rule_id: typescript.reliability.no-setinterval-without-clear
     globs: "**/*.ts"
     enforcement: teach-only
+  - name: no-unvalidated-external-href
+    rule_id: typescript.security.no-unvalidated-external-href
+    globs: "**/*.{ts,tsx}"
+    enforcement: checker
+  - name: no-orphaned-effect-timeouts
+    rule_id: typescript.ui.no-orphaned-effect-timeouts
+    globs: "**/*.{ts,tsx}"
+    enforcement: checker
+  - name: no-eager-heavy-dependency-import
+    rule_id: typescript.performance.no-eager-heavy-dependency-import
+    globs: "**/*.{ts,tsx}"
+    enforcement: checker
+  - name: no-or-default-for-nonzero-number
+    rule_id: typescript.correctness.no-or-default-for-nonzero-number
+    globs: "**/*.{ts,tsx}"
+    enforcement: checker

@@ -4,6 +4,12 @@
 # scripts/ci.sh puts scripts/ on PYTHONPATH and imports the engine from
 # src/ (or from an installed deslop-engine); the engine needs Python 3.11+,
 # pydantic>=2 and PyYAML>=6, which the editable install below provides.
+#
+# Extra toolchains, only if that language is in the repo:
+#   Java AST checkers: JDK 21 (javac/java). JavaParser jar is fetched once.
+#   TypeScript checkers: Node + npm (checkers/tsast).
+#   Go checkers: Go 1.21+ (builds checkers/goast).
+# Python and Android checkers are stdlib / in-process.
 name: deslop pack check
 
 on:
@@ -18,6 +24,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
 
       - name: Install deslop engine
         run: pip install -e ./deslop

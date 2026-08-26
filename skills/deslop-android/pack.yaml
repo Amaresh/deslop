@@ -1,0 +1,31 @@
+pack_id: deslop-android-v1
+version: "0.1.0"
+invocation: explicit
+lang: android
+
+engine:
+  rule_ids: []
+
+mine:
+  rule_ids:
+    - android.security.no-hardcoded-secret-literals
+    - android.reliability.no-unscoped-boundary-coroutine
+    - android.reliability.no-runblocking-hotpath
+
+frameworks:
+  - android
+  - compose
+
+skills:
+  - name: no-hardcoded-secret-literals
+    rule_id: android.security.no-hardcoded-secret-literals
+    globs: "**/*.kt"
+    enforcement: checker
+  - name: no-unscoped-boundary-coroutine
+    rule_id: android.reliability.no-unscoped-boundary-coroutine
+    globs: "**/*.kt"
+    enforcement: checker
+  - name: no-runblocking-hotpath
+    rule_id: android.reliability.no-runblocking-hotpath
+    globs: "**/*.kt"
+    enforcement: checker

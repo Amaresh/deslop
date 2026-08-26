@@ -5,3 +5,8 @@ __pycache__/
 generated/
 .venv/
 *.egg-info/
+checkers/tsast/node_modules/
+checkers/tsast/package-lock.json
+checkers/javaast/*.jar
+checkers/javaast/*.class
+checkers/goast/goast-facts

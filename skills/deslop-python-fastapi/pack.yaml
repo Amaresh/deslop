@@ -1,33 +1,64 @@
 pack_id: deslop-python-fastapi-v1
-version: "0.1.0"
+version: "0.2.0"
 invocation: explicit
+lang: python
 
-# Catalog + pack-index only. install.py / export.py read the root pack.yaml
-# (Java). Nested collisions/install_namespace were unused config and are gone.
+# Catalog + pack-index. install.py still writes the Java pack-index only.
 
 engine:
   rule_ids: []
+
+mine:
+  rule_ids:
+    - python.asyncio.no-sync-blocking-io-in-async-def-route
+    - python.http.no-httpx-client-without-explicit-timeout
+    - python.reliability.no-except-exception-pass-swallow
+    - python.security.no-dynamic-sql-execution
+    - python.reliability.no-route-request-json-without-invalid-json-guard
+    - python.security.no-raw-pii-logging
+    - python.architecture.no-request-layer-outbound-client-construction
+    - python.http.no-requests-call-without-timeout
 
 frameworks:
   - fastapi
   - pydantic
   - httpx
 
-# checker: an agent-written sample already fails scripts/check.py.
+# checker: portable AST detector, 0 unjustified OSS FPs; CI fails.
 # teach-only: skill may teach it; CI must not fail on it yet.
 skills:
   - name: no-sync-blocking-io-in-async-route
     rule_id: python.asyncio.no-sync-blocking-io-in-async-def-route
     globs: "**/*.py"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-httpx-asyncclient-without-timeout
     rule_id: python.http.no-httpx-client-without-explicit-timeout
     globs: "**/*.py"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-except-exception-pass
     rule_id: python.reliability.no-except-exception-pass-swallow
     globs: "**/*.py"
-    enforcement: teach-only
+    enforcement: checker
+  - name: no-dynamic-sql-execution
+    rule_id: python.security.no-dynamic-sql-execution
+    globs: "**/*.py"
+    enforcement: checker
+  - name: no-route-request-json-without-invalid-json-guard
+    rule_id: python.reliability.no-route-request-json-without-invalid-json-guard
+    globs: "**/*.py"
+    enforcement: checker
+  - name: no-raw-pii-logging
+    rule_id: python.security.no-raw-pii-logging
+    globs: "**/*.py"
+    enforcement: checker
+  - name: no-request-layer-outbound-client-construction
+    rule_id: python.architecture.no-request-layer-outbound-client-construction
+    globs: "**/*.py"
+    enforcement: checker
+  - name: no-requests-call-without-timeout
+    rule_id: python.http.no-requests-call-without-timeout
+    globs: "**/*.py"
+    enforcement: checker
   - name: no-fstring-sql-interpolation
     rule_id: python.sql.no-fstring-sql-interpolation
     globs: "**/*.py"
