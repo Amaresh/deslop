@@ -1,5 +1,5 @@
 pack_id: deslop-java-spring-v1
-version: "0.1.0"
+version: "0.2.0"
 invocation: explicit
 install_namespace: deslop
 
@@ -18,7 +18,7 @@ frameworks:
 collisions:
   - .cursor/rules/my-org-java-rules.mdc
 
-# checker: an agent-written sample already fails scripts/check.py.
+# checker: detector exists and OSS unjustified FPs are gone; CI fails.
 # teach-only: skill may teach it; CI must not fail on it yet.
 skills:
   - name: no-jpql-null-or-lower
@@ -28,8 +28,8 @@ skills:
   - name: no-transactional-external-io
     rule_id: java.architecture.no-service-layer-transactional-external-io
     globs: "**/*Service.java"
-    enforcement: teach-only
+    enforcement: checker
   - name: no-rest-template-without-timeout
     rule_id: java.architecture.no-service-layer-rest-template-without-timeout-shaping
     globs: "**/*Service.java"
-    enforcement: teach-only
+    enforcement: checker

@@ -28,7 +28,7 @@ Three packs ship in this repo. `deslop learn` also profiles **Go**.
 
 | Pack | Languages / frameworks | Rules | CI today |
 |---|---|---|---|
-| [`deslop-java-spring`](skills/deslop-java-spring/SKILL.md) | Java, Spring, JPA | 3 | **1 checker** (JPQL optional-filter) + 2 teach-only |
+| [`deslop-java-spring`](skills/deslop-java-spring/SKILL.md) | Java, Spring, JPA | 3 | **3 checkers** |
 | [`deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 8 | teach-only |
 | [`deslop-ts-node`](skills/deslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 8 | teach-only |
 | `deslop learn` | Go, Python, TypeScript, Java | — | measures conventions; does not install a pack |
@@ -36,7 +36,7 @@ Three packs ship in this repo. `deslop learn` also profiles **Go**.
 ```mermaid
 flowchart TB
   subgraph available [What you can use today]
-    J["Java / Spring<br/>install + 1 CI gate"]
+    J["Java / Spring<br/>install + 3 CI gates"]
     P["Python / FastAPI<br/>8 teach skills"]
     T["TypeScript / Node<br/>8 teach skills"]
   end
@@ -55,18 +55,17 @@ not pretend `deslop install` drops FastAPI or Node rules into a repo.
 ## How a rule reaches CI
 
 An invariant is a property that must always hold. Every rule starts as
-**teach-only** (steering). It becomes **checker** only after a detector
-exists *and* an independently produced agent-written sample fails that
-detector. See
+**teach-only** (steering). It becomes **checker** after a detector exists
+and OSS benches show **0 unjustified false positives**. See
 [docs/composer-experiment.md](docs/composer-experiment.md) for the
-evidence behind the first Java checker.
+agent-sample evidence behind the first Java checker.
 
 ```mermaid
 flowchart TD
   I["Must always hold"] --> S["Skill in the pack"]
   S --> T["teach-only"]
   T --> D["Detector exists"]
-  D --> V["Agent sample fails<br/>the detector"]
+  D --> V["0 unjustified FPs<br/>on OSS bench"]
   V --> C["checker<br/>CI fails the build"]
   T -.->|"no detector yet"| Stay["Stays teach-only"]
 ```
@@ -78,8 +77,8 @@ flowchart TD
 | Rule | Enforcement | Invariant |
 |---|---|---|
 | `no-jpql-null-or-lower` | **checker** | No `:param IS NULL OR` combined with `LOWER` on optional JPQL filters; use an empty-string sentinel |
-| `no-transactional-external-io` | teach-only | No HTTP / S3 / messaging inside `@Transactional`; persist, commit, then send |
-| `no-rest-template-without-timeout` | teach-only | No `new RestTemplate()` without `setRequestFactory` timeout shaping |
+| `no-transactional-external-io` | **checker** | No HTTP / S3 / messaging inside `@Transactional`; persist, commit, then send |
+| `no-rest-template-without-timeout` | **checker** | No `new RestTemplate()` without `setRequestFactory` timeout shaping |
 
 ### Python / FastAPI
 
@@ -195,7 +194,8 @@ and it tells you what that repo would teach a new contributor.
   depends on your harness; discovery behavior varies.
 - Teach rules are not gates and must not be sold as gates.
 - Not "works on any Spring / FastAPI / Node repo." Packs are small and
-  specific. One Java rule is CI-gated; the rest steer.
+  specific. Three Java rules are CI-gated; Python and TypeScript packs
+  still steer only.
 
 ## License
 

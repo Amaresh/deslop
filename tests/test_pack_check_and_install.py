@@ -67,9 +67,9 @@ def test_clean_fixture_has_no_findings() -> None:
     assert result.findings == ()
 
 
-def test_only_jpql_is_checker() -> None:
-    assert checker_rule_ids() == (JPQL,)
-    assert set(teach_only_rule_ids()) == set(engine_rule_ids()) - {JPQL}
+def test_all_java_pack_rules_are_checkers() -> None:
+    assert set(checker_rule_ids()) == set(engine_rule_ids())
+    assert teach_only_rule_ids() == ()
 
 
 def test_check_cli_exit_codes() -> None:
@@ -111,12 +111,12 @@ def test_json_includes_enforcement_coverage_and_not_covered() -> None:
     assert payload["passed"] is False
     assert payload["enforcement"][JPQL] == "checker"
     assert JPQL not in payload["not_covered"]
-    assert set(payload["not_covered"]) == set(teach_only_rule_ids())
+    assert payload["not_covered"] == []
     assert payload["coverage"] is not None
     assert payload["pack_frameworks"] == ["spring", "jpa"]
     assert payload["uncovered_pack_frameworks"] == []
     assert payload["gate_finding_count"] >= 1
-    assert payload["teach_only_finding_count"] >= 1
+    assert payload["teach_only_finding_count"] == 0
     assert payload["collisions"] == []
 
 
@@ -153,7 +153,7 @@ def test_spring_boot_pom_covers_pack_frameworks_without_override(tmp_path: Path)
     assert "jpa" in (payload.get("coverage") or {}).get("repo_frameworks", [])
 
 
-def test_teach_only_finding_does_not_fail_ci() -> None:
+def test_rest_template_finding_fails_ci() -> None:
     check = PACK_ROOT / "scripts" / "check.py"
     default = subprocess.run(
         [sys.executable, str(check), "--repo-root", str(DIRTY), "--rule", REST_TEMPLATE],
@@ -161,27 +161,7 @@ def test_teach_only_finding_does_not_fail_ci() -> None:
         capture_output=True,
         text=True,
     )
-    forced = subprocess.run(
-        [
-            sys.executable,
-            str(check),
-            "--repo-root",
-            str(DIRTY),
-            "--rule",
-            REST_TEMPLATE,
-            "--fail-on-teach-only",
-            "--format",
-            "json",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert default.returncode == 0
-    assert forced.returncode == 1
-    payload = json.loads(forced.stdout)
-    assert payload["not_covered"] == [REST_TEMPLATE]
-    assert payload["teach_only_finding_count"] == 1
+    assert default.returncode == 1
 
 
 def test_ci_script_exit_codes() -> None:
@@ -217,6 +197,8 @@ def test_deslop_review_and_check() -> None:
     )
     assert review.returncode == 0, review.stderr
     assert "no-jpql-null-or-lower  checker" in review.stdout
+    assert "no-transactional-external-io  checker" in review.stdout
+    assert "no-rest-template-without-timeout  checker" in review.stdout
     check = subprocess.run(
         [
             sys.executable,

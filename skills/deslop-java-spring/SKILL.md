@@ -15,7 +15,9 @@ metadata:
 
 Do not apply every section. Match the file in front of you.
 
-CI gates only the JPQL repository rule (`enforcement: checker`). The other sections are teach-only until an agent-written sample fails `scripts/check.py`.
+CI gates all three rules (`enforcement: checker`): JPQL optional-filter,
+`new RestTemplate()` without timeout shaping, and HTTP/S3/messaging inside
+`@Transactional`.
 
 ## `*Repository.java`
 
