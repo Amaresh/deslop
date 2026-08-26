@@ -106,8 +106,11 @@ def pack_frameworks(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
     return tuple(data.get("frameworks") or ())
 
 
-def skill_dirs() -> tuple[Path, ...]:
-    return tuple(sorted(path for path in SKILLS_ROOT.iterdir() if path.is_dir()))
+def skill_dirs(skills_root: Path | None = None) -> tuple[Path, ...]:
+    root = skills_root if skills_root is not None else SKILLS_ROOT
+    if not root.is_dir():
+        return ()
+    return tuple(sorted(path for path in root.iterdir() if path.is_dir()))
 
 
 def parse_skill_frontmatter(skill_dir: Path) -> dict[str, Any]:
@@ -139,13 +142,31 @@ def load_all_packs() -> list[dict[str, Any]]:
     return [yaml.safe_load(path.read_text(encoding="utf-8")) for path in all_pack_yamls()]
 
 
-def invariant_skill_dirs(pack_id: str | None = None) -> tuple[Path, ...]:
+def invariant_skill_dirs(
+    pack_id: str | None = None,
+    *,
+    skills_root: Path | None = None,
+) -> tuple[Path, ...]:
     wanted = pack_id if pack_id is not None else load_pack()["pack_id"]
-    return tuple(
-        path
-        for path in skill_dirs()
-        if not _is_pack_index(path) and _skill_pack_id(path) == wanted
-    )
+    missing: list[str] = []
+    matched: list[Path] = []
+    for path in skill_dirs(skills_root):
+        if not (path / "SKILL.md").exists():
+            continue
+        if _is_pack_index(path):
+            continue
+        pid = _skill_pack_id(path)
+        if not pid:
+            missing.append(path.name)
+            continue
+        if pid == wanted:
+            matched.append(path)
+    if missing:
+        raise SystemExit(
+            "skills missing metadata.pack (would be silently dropped from "
+            "install/export): " + ", ".join(sorted(missing))
+        )
+    return tuple(matched)
 
 
 def pack_index_dir() -> Path:

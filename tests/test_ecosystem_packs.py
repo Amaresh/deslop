@@ -22,7 +22,8 @@ def test_ecosystem_packs_declare_pack_yaml() -> None:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["pack_id"] == expected_id
         assert data["invocation"] == "explicit"
-        assert data["install_namespace"] == "deslop"
+        assert "install_namespace" not in data
+        assert "collisions" not in data
         assert data["engine"]["rule_ids"] == []
         assert len(data["skills"]) == 8
 
@@ -67,3 +68,18 @@ def test_every_rule_has_a_bad_and_good_code_pair() -> None:
             text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
             assert "## Do" in text, skill_dir.name
             assert "## Do not" in text, skill_dir.name
+
+
+def test_missing_pack_metadata_is_fatal(tmp_path) -> None:
+    skill = tmp_path / "orphan-skill"
+    skill.mkdir()
+    (skill / "SKILL.md").write_text(
+        "---\nname: orphan-skill\nmetadata: {}\n---\n\n# orphan\n",
+        encoding="utf-8",
+    )
+    try:
+        invariant_skill_dirs(pack_id="deslop-java-spring-v1", skills_root=tmp_path)
+    except SystemExit as exc:
+        assert "orphan-skill" in str(exc)
+        return
+    raise AssertionError("expected SystemExit for missing metadata.pack")

@@ -1,11 +1,10 @@
 pack_id: deslop-python-fastapi-v1
 version: "0.1.0"
 invocation: explicit
-install_namespace: deslop
 
-# Skills-only pack: no engine detectors exist for these rules yet, so nothing
-# is gated. Promote a rule to the root engine.rule_ids only once an
-# agent-written sample fails scripts/check.py.
+# Catalog + pack-index only. install.py / export.py read the root pack.yaml
+# (Java). Nested collisions/install_namespace were unused config and are gone.
+
 engine:
   rule_ids: []
 
@@ -13,11 +12,6 @@ frameworks:
   - fastapi
   - pydantic
   - httpx
-
-# Repos that already carry their own agent-rule setup; install refuses these
-# unless --force. Extend with your org's markers.
-collisions:
-  - .cursor/rules/my-org-python-rules.mdc
 
 # checker: an agent-written sample already fails scripts/check.py.
 # teach-only: skill may teach it; CI must not fail on it yet.
