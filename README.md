@@ -10,15 +10,15 @@ deterministic checker on the subset with verified detectors.
 
 ```mermaid
 flowchart LR
-  subgraph Before["Before the agent writes"]
-    A[Your repo] --> B[deslop pack skills]
-    B --> C[Agent reads matching rule]
-    C --> D[Code that already follows the invariant]
+  subgraph beforeWrite [Before the agent writes]
+    A["Your repo"] --> B["deslop pack skills"]
+    B --> C["Agent reads matching rule"]
+    C --> D["Code follows the invariant"]
   end
-  subgraph After["After, if it still slips"]
+  subgraph afterSlip [If it still slips]
     D --> E["deslop check in CI"]
-    E -->|checker finding| F[Build fails]
-    E -->|teach-only| G[Warning only — never a red build]
+    E -->|"checker finding"| F["Build fails"]
+    E -->|"teach-only"| G["Warning only, never a red build"]
   end
 ```
 
@@ -35,16 +35,15 @@ Three packs ship in this repo. `deslop learn` also profiles **Go**.
 
 ```mermaid
 flowchart TB
-  subgraph Available["What you can use today"]
-    direction LR
-    J["Java / Spring<br/>install + 1 CI gate"]
-    P["Python / FastAPI<br/>8 teach skills"]
-    T["TypeScript / Node / React<br/>8 teach skills"]
+  subgraph available [What you can use today]
+    J["Java / Spring - install plus 1 CI gate"]
+    P["Python / FastAPI - 8 teach skills"]
+    T["TypeScript / Node / React - 8 teach skills"]
   end
-  subgraph Discover["What you can measure"]
-    L["deslop learn<br/>Go · Python · TypeScript · Java"]
+  subgraph discover [What you can measure]
+    L["deslop learn - Go, Python, TypeScript, Java"]
   end
-  Available --> Discover
+  available --> discover
 ```
 
 `deslop install` writes the **Java/Spring** pack-index into a target repo.
@@ -63,12 +62,12 @@ evidence behind the first Java checker.
 
 ```mermaid
 flowchart TD
-  I["Invariant: a property that must always hold"] --> S["Skill file in the pack"]
-  S --> T["enforcement: teach-only<br/>agent may read it; CI must not fail"]
+  I["Invariant - a property that must always hold"] --> S["Skill file in the pack"]
+  S --> T["teach-only - agent may read it, CI must not fail"]
   T --> D["Detector exists"]
   D --> V["Independent agent sample fails the detector"]
-  V --> C["enforcement: checker<br/>scripts/ci.sh exit 1"]
-  T -.->|"no detector or no independent fail"| Stay[Stays teach-only]
+  V --> C["checker - CI fails the build"]
+  T -.->|"no detector yet"| Stay["Stays teach-only"]
 ```
 
 ## Pack contents
@@ -114,13 +113,13 @@ All teach-only. Pack index: [`skills/deslop-ts-node`](skills/deslop-ts-node/SKIL
 ## Using a pack
 
 ```mermaid
-flowchart LR
-  Clone["git clone Amaresh/deslop"] --> Pick{Which stack?}
-  Pick -->|Java / Spring| Inst["pip install -e .<br/>deslop install --target your-repo"]
-  Pick -->|Python / FastAPI| CopyP["Copy skills/deslop-python-fastapi<br/>+ its no-* skills into your agent layout"]
-  Pick -->|TypeScript / Node| CopyT["Copy skills/deslop-ts-node<br/>+ its no-* skills into your agent layout"]
-  Inst --> CI["scripts/ci.sh your-repo<br/>fails only on checker rules"]
-  CopyP --> Agent[Agent reads the pack-index skill]
+flowchart TD
+  Clone["Clone Amaresh/deslop"] --> Pick{"Which stack?"}
+  Pick -->|"Java / Spring"| Inst["deslop install into your-repo"]
+  Pick -->|"Python / FastAPI"| CopyP["Copy the Python pack skills"]
+  Pick -->|"TypeScript / Node"| CopyT["Copy the TypeScript pack skills"]
+  Inst --> CI["ci.sh fails only on checker rules"]
+  CopyP --> Agent["Agent reads the pack-index skill"]
   CopyT --> Agent
 ```
 
@@ -177,10 +176,10 @@ python3 scripts/learn.py --repo /path/to/repo --lang go --out learn-out
 
 ```mermaid
 flowchart TD
-  R[Repository] --> T1["Tier 1: deterministic counters<br/>context-first handlers, %w wrapping,<br/>timeout-shaped HTTP, parameterized SQL,<br/>response_model, any-density, …"]
-  T1 --> T2["Tier 2: agent induction<br/>house conventions counters cannot see"]
-  T2 --> C["Candidates with ≥3 file:line cites"]
-  C --> H["Same honesty rails:<br/>teach-only until an agent-written<br/>violation fails a detector"]
+  R["Repository"] --> T1["Tier 1 - deterministic counters"]
+  T1 --> T2["Tier 2 - agent induction"]
+  T2 --> C["Candidates with at least 3 file-line cites"]
+  C --> H["teach-only until a detector catches an agent-written violation"]
 ```
 
 Learn is the "find rules" counterpart to "apply rules": point it at a repo
