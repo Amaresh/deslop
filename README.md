@@ -54,9 +54,10 @@ not pretend `deslop install` drops FastAPI or Node rules into a repo.
 
 ## How a rule reaches CI
 
-Every rule starts as **teach-only** (steering). It becomes **checker**
-only after a detector exists *and* an independently produced agent-written
-sample fails that detector. See
+An invariant is a property that must always hold. Every rule starts as
+**teach-only** (steering). It becomes **checker** only after a detector
+exists *and* an independently produced agent-written sample fails that
+detector. See
 [docs/composer-experiment.md](docs/composer-experiment.md) for the
 evidence behind the first Java checker.
 
