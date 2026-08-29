@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-android-v1
+  pack: stopthatslop-android-v1
   engine_rule_id: android.reliability.no-unscoped-boundary-coroutine
   globs: "**/*.kt"
 ---

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copy-paste CI for a vendored deslop pack. Not a hosted product.
+# Copy-paste CI for a vendored stopthatslop pack. Not a hosted product.
 #
 # Exit 0: no checker findings.
 # Exit 1: one or more checker (enforceable) findings.
@@ -36,7 +36,7 @@ fi
 
 export PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}"
 
-echo "deslop ci: repo=$REPO_ROOT format=$FORMAT" >&2
+echo "stopthatslop ci: repo=$REPO_ROOT format=$FORMAT" >&2
 exec "$ENGINE_PYTHON" "$SCRIPT_DIR/check.py" \
   --repo-root "$REPO_ROOT" \
   --format "$FORMAT" \

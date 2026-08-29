@@ -1,8 +1,8 @@
-# Copy into a consuming repo that vendors this pack as ./deslop (a checkout of
-# the deslop repository). Not a hosted Action.
+# Copy into a consuming repo that vendors this pack as ./stopthatslop (a checkout of
+# the stopthatslop repository). Not a hosted Action.
 #
 # scripts/ci.sh puts scripts/ on PYTHONPATH and imports the engine from
-# src/ (or from an installed deslop-engine); the engine needs Python 3.11+,
+# src/ (or from an installed stopthatslop-engine); the engine needs Python 3.11+,
 # pydantic>=2 and PyYAML>=6, which the editable install below provides.
 #
 # Extra toolchains, only if that language is in the repo:
@@ -10,13 +10,13 @@
 #   TypeScript checkers: Node + npm (checkers/tsast).
 #   Go checkers: Go 1.21+ (builds checkers/goast).
 # Python and Android checkers are stdlib / in-process.
-name: deslop pack check
+name: stopthatslop pack check
 
 on:
   pull_request:
 
 jobs:
-  deslop:
+  stopthatslop:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +38,11 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install deslop engine
-        run: pip install -e ./deslop
+      - name: Install stopthatslop engine
+        run: pip install -e ./stopthatslop
 
       - name: Run pack checker
         env:
           FORMAT: json
           ENGINE_PYTHON: python3
-        run: bash deslop/scripts/ci.sh "$GITHUB_WORKSPACE"
+        run: bash stopthatslop/scripts/ci.sh "$GITHUB_WORKSPACE"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v1 deslop CLI: export, review, install, update, rollback, check."""
+"""v1 stopthatslop CLI: export, review, install, update, rollback, check, learn."""
 
 from __future__ import annotations
 
@@ -46,7 +46,16 @@ def _review() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="deslop v1 — export/install/check a pack")
+    if argv is None:
+        argv = sys.argv[1:]
+    if argv[:1] == ["learn"]:
+        from learn import main as learn_main
+
+        return learn_main(argv[1:])
+
+    parser = argparse.ArgumentParser(
+        description="stopthatslop v1 — export/install/check a pack"
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     export_p = sub.add_parser("export", help="Write pack-index tree from RuleDefinitions")
@@ -71,6 +80,8 @@ def main(argv: list[str] | None = None) -> int:
 
     check_p = sub.add_parser("check", help="Run checker; exit 1 on checker findings")
     _add_check_args(check_p)
+
+    sub.add_parser("learn", help="Extract implicit rules from a codebase")
 
     args = parser.parse_args(argv)
 

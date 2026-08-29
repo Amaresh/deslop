@@ -6,7 +6,7 @@ Portable React: the same JSX / createElement node must not set both
 Spreads are unknown (omitted from jsx facts) so `{...props}` plus one
 explicit control prop is silent. `value` without `defaultValue` is silent.
 
-Not Motorrad React Flow `defaultEdges`.
+Does not flag React Flow `defaultEdges`.
 
 AST-facts implementation (tsast jsx).
 """

@@ -12,8 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .models import RulesRunResult
 
-_ATTESTATION_SCHEMA = "deslop.attestation.v1"
-_PREDICATE_TYPE = "https://deslop.dev/attestation/v1"
+_ATTESTATION_SCHEMA = "stopthatslop.attestation.v1"
+_PREDICATE_TYPE = "https://stopthatslop.dev/attestation/v1"
 
 
 class AttestationSubject(BaseModel):

@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-ts-node-v1
+  pack: stopthatslop-ts-node-v1
   engine_rule_id: typescript.performance.no-eager-heavy-dependency-import
   globs: "**/*.{ts,tsx}"
 ---

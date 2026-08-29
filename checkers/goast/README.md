@@ -1,4 +1,4 @@
-# goast — AST facts extractor for deslop detectors
+# goast — AST facts extractor for stopthatslop detectors
 
 Stdlib-only Go helper (`go/parser` + `go/ast`, no type checking) that parses a
 Go source file and emits structural JSON facts. Python detectors (G2 rewrite,

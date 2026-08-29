@@ -189,10 +189,10 @@ def test_ci_script_exit_codes() -> None:
     assert "not_covered (teach-only)" in dirty.stdout
 
 
-def test_deslop_review_and_check() -> None:
-    deslop = PACK_ROOT / "scripts" / "deslop.py"
+def test_stopthatslop_review_and_check() -> None:
+    stopthatslop = PACK_ROOT / "scripts" / "stopthatslop.py"
     review = subprocess.run(
-        [sys.executable, str(deslop), "review"],
+        [sys.executable, str(stopthatslop), "review"],
         check=False,
         capture_output=True,
         text=True,
@@ -204,7 +204,7 @@ def test_deslop_review_and_check() -> None:
     check = subprocess.run(
         [
             sys.executable,
-            str(deslop),
+            str(stopthatslop),
             "check",
             "--repo-root",
             str(CLEAN),
@@ -233,19 +233,19 @@ def test_install_writes_pack_index_not_sibling_skills(tmp_path: Path) -> None:
     written, hits = install(target=tmp_path)
     assert hits == ()
     skill_md = (
-        tmp_path / ".agents" / "skills" / "deslop" / PACK_INDEX_NAME / "SKILL.md"
+        tmp_path / ".agents" / "skills" / "stopthatslop" / PACK_INDEX_NAME / "SKILL.md"
     )
     assert skill_md in written
     text = skill_md.read_text(encoding="utf-8")
-    assert "name: deslop-java-spring" in text
-    references = tmp_path / ".agents" / "skills" / "deslop" / PACK_INDEX_NAME / "references"
+    assert "name: stopthatslop-java-spring" in text
+    references = tmp_path / ".agents" / "skills" / "stopthatslop" / PACK_INDEX_NAME / "references"
     assert (references / "no-jpql-null-or-lower.md").exists()
     assert not (
-        tmp_path / ".agents" / "skills" / "deslop" / "no-jpql-null-or-lower"
+        tmp_path / ".agents" / "skills" / "stopthatslop" / "no-jpql-null-or-lower"
     ).exists()
     manifest = yaml.safe_load(
         (
-            tmp_path / ".agents" / "skills" / "deslop" / PACK_INDEX_NAME / "installed.yaml"
+            tmp_path / ".agents" / "skills" / "stopthatslop" / PACK_INDEX_NAME / "installed.yaml"
         ).read_text(encoding="utf-8")
     )
     assert manifest["version"] == load_pack()["version"]
@@ -260,7 +260,7 @@ def test_install_force_reports_collision_and_snapshots(tmp_path: Path) -> None:
     assert any("engineering-rules" in hit for hit in hits)
     assert first
     install(target=tmp_path, force=True)
-    snapshot = tmp_path / ".deslop" / "versions" / "deslop" / PACK_INDEX_NAME
+    snapshot = tmp_path / ".stopthatslop" / "versions" / "stopthatslop" / PACK_INDEX_NAME
     assert snapshot.exists()
     restored = rollback(target=tmp_path)
     assert restored

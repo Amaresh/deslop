@@ -1,5 +1,5 @@
 ---
-name: deslop-go
+name: stopthatslop-go
 description: >-
   Go HTTP and database/sql pack. Use when editing Go net/http handlers,
   websocket upgraders, or database/sql Scan/Query. One pack, several
@@ -7,16 +7,16 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-go-v1
+  pack: stopthatslop-go-v1
   kind: pack-index
 ---
 
-# deslop-go
+# stopthatslop-go
 
 Do not apply every section. Match the file in front of you.
 
 CI gates all eight rules (`enforcement: checker`). Needs a Go toolchain
-so `deslop check` can build the AST helper.
+so `stopthatslop check` can build the AST helper.
 
 ## HTTP handlers
 

@@ -22,7 +22,7 @@ from pack_lib import (
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Install deslop-java-spring as one pack-index skill."
+        description="Install stopthatslop-java-spring as one pack-index skill."
     )
     parser.add_argument("--target", type=Path, required=True)
     parser.add_argument(
@@ -43,7 +43,7 @@ def _dest_root(target: Path, namespace: str) -> Path:
 
 
 def _versions_root(target: Path, namespace: str) -> Path:
-    return target / ".deslop" / "versions" / namespace / PACK_INDEX_NAME
+    return target / ".stopthatslop" / "versions" / namespace / PACK_INDEX_NAME
 
 
 def _manifest_path(dest: Path) -> Path:

@@ -1,4 +1,4 @@
-"""Run portable AST checkers. Not Motorrad engine adapters."""
+"""Run portable AST checkers (not Java-engine adapters)."""
 from __future__ import annotations
 
 import importlib.util

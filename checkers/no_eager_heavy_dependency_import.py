@@ -11,7 +11,7 @@ from tsast_client import is_out_of_scope, load_facts
 LANG = "ts"
 RULE_ID = "typescript.performance.no-eager-heavy-dependency-import"
 
-# Motorrad allowlist, plus common subpath imports (lodash/union).
+# Heavy packages, plus common subpath imports (lodash/union).
 _HEAVY_EXACT = frozenset({
     "jsqr", "pdf-lib", "chart.js", "xlsx", "jspdf", "html2canvas", "mammoth",
     "fabric", "konva", "three", "lodash", "moment", "date-fns",

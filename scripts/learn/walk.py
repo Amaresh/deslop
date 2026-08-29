@@ -1,4 +1,4 @@
-"""Language-aware source discovery for deslop learn.
+"""Language-aware source discovery for stopthatslop learn.
 
 Respects the same skip discipline as the detectors: tests, vendored code,
 generated output and build artifacts are never scanned.

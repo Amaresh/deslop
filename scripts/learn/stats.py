@@ -1,4 +1,4 @@
-"""Shared types and output formatting for deslop learn."""
+"""Shared types and output formatting for stopthatslop learn."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# javaast — AST facts extractor for Java deslop detectors
+# javaast — AST facts extractor for Java stopthatslop detectors
 
 JavaParser-based helper that parses a `.java` file and emits structural JSON
 facts. Python detectors consume these facts instead of regexing source text.
@@ -25,7 +25,7 @@ java -cp javaparser-core-3.26.4.jar:. JavaAstFacts --worker   # one path per std
 ```
 
 Parse errors go to stderr (one-shot exit 1) or emit JSON `null` (worker).
-The worker stays alive so `deslop check` does not pay JVM
+The worker stays alive so `stopthatslop check` does not pay JVM
 startup per file.
 
 Language level is Java 21 (`ParserConfiguration.setLanguageLevel`).

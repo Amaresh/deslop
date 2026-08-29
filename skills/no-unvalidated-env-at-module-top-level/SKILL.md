@@ -9,7 +9,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-ts-node-v1
+  pack: stopthatslop-ts-node-v1
   engine_rule_id: typescript.node.no-unvalidated-env-at-module-top-level
   globs: "**/*.ts"
 ---

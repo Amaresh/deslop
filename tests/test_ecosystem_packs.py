@@ -17,10 +17,10 @@ from pack_lib import (
 )
 
 ECOSYSTEM_PACK_IDS = {
-    "deslop-python-fastapi": "deslop-python-fastapi-v1",
-    "deslop-ts-node": "deslop-ts-node-v1",
-    "deslop-go": "deslop-go-v1",
-    "deslop-android": "deslop-android-v1",
+    "stopthatslop-python-fastapi": "stopthatslop-python-fastapi-v1",
+    "stopthatslop-ts-node": "stopthatslop-ts-node-v1",
+    "stopthatslop-go": "stopthatslop-go-v1",
+    "stopthatslop-android": "stopthatslop-android-v1",
 }
 
 
@@ -94,7 +94,7 @@ def test_missing_pack_metadata_is_fatal(tmp_path) -> None:
         encoding="utf-8",
     )
     try:
-        invariant_skill_dirs(pack_id="deslop-java-spring-v1", skills_root=tmp_path)
+        invariant_skill_dirs(pack_id="stopthatslop-java-spring-v1", skills_root=tmp_path)
     except SystemExit as exc:
         assert "orphan-skill" in str(exc)
         return
@@ -102,7 +102,7 @@ def test_missing_pack_metadata_is_fatal(tmp_path) -> None:
 
 
 def test_load_pack_aliases() -> None:
-    assert load_pack_by_id("java")["pack_id"] == "deslop-java-spring-v1"
-    assert load_pack_by_id("python")["pack_id"] == "deslop-python-fastapi-v1"
+    assert load_pack_by_id("java")["pack_id"] == "stopthatslop-java-spring-v1"
+    assert load_pack_by_id("python")["pack_id"] == "stopthatslop-python-fastapi-v1"
     packs = {data["pack_id"] for data in load_all_packs()}
-    assert packs >= set(ECOSYSTEM_PACK_IDS.values()) | {"deslop-java-spring-v1"}
+    assert packs >= set(ECOSYSTEM_PACK_IDS.values()) | {"stopthatslop-java-spring-v1"}

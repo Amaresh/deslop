@@ -1,5 +1,5 @@
 ---
-name: deslop-python-fastapi
+name: stopthatslop-python-fastapi
 description: >-
   FastAPI/Pydantic architecture pack. Use when editing Python async route
   handlers, Pydantic models, httpx clients, or app settings. One pack, several
@@ -7,11 +7,11 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-python-fastapi-v1
+  pack: stopthatslop-python-fastapi-v1
   kind: pack-index
 ---
 
-# deslop-python-fastapi
+# stopthatslop-python-fastapi
 
 Do not apply every section. Match the file in front of you.
 

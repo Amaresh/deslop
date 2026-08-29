@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-python-fastapi-v1
+  pack: stopthatslop-python-fastapi-v1
   engine_rule_id: python.reliability.no-route-request-json-without-invalid-json-guard
   globs: "**/*.py"
 ---

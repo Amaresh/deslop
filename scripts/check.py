@@ -45,7 +45,7 @@ class CombinedResult:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run deterministic checks for selected deslop packs."
+        description="Run deterministic checks for selected stopthatslop packs."
     )
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument(

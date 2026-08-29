@@ -24,7 +24,7 @@ from engineering_rules.registry import create_default_registry  # noqa: E402
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Export deslop-java-spring as a generated pack-index."
+        description="Export stopthatslop-java-spring as a generated pack-index."
     )
     parser.add_argument(
         "--out",

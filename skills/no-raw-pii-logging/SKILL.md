@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-python-fastapi-v1
+  pack: stopthatslop-python-fastapi-v1
   engine_rule_id: python.security.no-raw-pii-logging
   globs: "**/*.py"
 ---

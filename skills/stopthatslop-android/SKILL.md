@@ -1,5 +1,5 @@
 ---
-name: deslop-android
+name: stopthatslop-android
 description: >-
   Android / Compose reliability pack. Use when editing Kotlin composables,
   ViewModels, or Activities. One pack, several invariants. Apply only the
@@ -7,11 +7,11 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-android-v1
+  pack: stopthatslop-android-v1
   kind: pack-index
 ---
 
-# deslop-android
+# stopthatslop-android
 
 Do not apply every section. Match the file in front of you.
 

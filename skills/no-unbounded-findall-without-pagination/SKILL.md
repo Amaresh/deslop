@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-java-spring-v1
+  pack: stopthatslop-java-spring-v1
   engine_rule_id: java.reliability.no-unbounded-findall-without-pagination
   globs: "**/*.java"
 ---

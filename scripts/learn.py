@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""deslop learn — extract the implicit rules of a codebase.
+"""stopthatslop learn — extract the implicit rules of a codebase.
 
 Usage:
-  python3 mine/learn.py --repo PATH --lang go|python|ts|java [--out DIR]
+  python3 scripts/stopthatslop.py learn --repo PATH --lang go|python|ts|java [--out DIR]
+  python3 scripts/learn.py --repo PATH --lang go|python|ts|java [--out DIR]
 """
 from __future__ import annotations
 

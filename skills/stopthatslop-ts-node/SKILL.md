@@ -1,5 +1,5 @@
 ---
-name: deslop-ts-node
+name: stopthatslop-ts-node
 description: >-
   TypeScript/Node/React architecture pack. Use when editing TypeScript async
   code, Express handlers, env access, React form inputs, or timers. One pack,
@@ -7,18 +7,18 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-ts-node-v1
+  pack: stopthatslop-ts-node-v1
   kind: pack-index
 ---
 
-# deslop-ts-node
+# stopthatslop-ts-node
 
 Do not apply every section. Match the file in front of you.
 
 Eight rules are CI-gated (`enforcement: checker`): fetch abort timeout, empty
 Express catch, unguarded `JSON.parse`, mixed controlled inputs, unvalidated
 href, orphaned effect timers, eager heavy imports, and `||` numeric defaults.
-Needs Node so `deslop check` can run the TypeScript parser. The rest of this
+Needs Node so `stopthatslop check` can run the TypeScript parser. The rest of this
 pack is still teach-only.
 
 ## Any `async` call site

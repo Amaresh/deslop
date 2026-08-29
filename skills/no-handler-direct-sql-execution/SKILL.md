@@ -5,7 +5,7 @@ description: >-
 disable-model-invocation: true
 license: MIT
 metadata:
-  pack: deslop-go-v1
+  pack: stopthatslop-go-v1
   engine_rule_id: go.architecture.no-handler-direct-sql-execution
   globs: "**/*.go"
 ---

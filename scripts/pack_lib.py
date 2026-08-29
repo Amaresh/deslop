@@ -1,4 +1,4 @@
-"""Shared paths and pack metadata for deslop packs."""
+"""Shared paths and pack metadata for stopthatslop packs."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ PACK_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_ROOT = PACK_ROOT / "skills"
 ENGINE_SRC = PACK_ROOT / "src"
 PACK_YAML = PACK_ROOT / "pack.yaml"
-PACK_INDEX_NAME = "deslop-java-spring"
+PACK_INDEX_NAME = "stopthatslop-java-spring"
 ENFORCEMENT_CHECKER = "checker"
 ENFORCEMENT_TEACH_ONLY = "teach-only"
 VALID_ENFORCEMENT = frozenset({ENFORCEMENT_CHECKER, ENFORCEMENT_TEACH_ONLY})
@@ -118,12 +118,12 @@ def pack_frameworks(pack: dict[str, Any] | None = None) -> tuple[str, ...]:
 
 
 PACK_ALIASES = {
-    "java": "deslop-java-spring-v1",
-    "python": "deslop-python-fastapi-v1",
-    "ts": "deslop-ts-node-v1",
-    "typescript": "deslop-ts-node-v1",
-    "go": "deslop-go-v1",
-    "android": "deslop-android-v1",
+    "java": "stopthatslop-java-spring-v1",
+    "python": "stopthatslop-python-fastapi-v1",
+    "ts": "stopthatslop-ts-node-v1",
+    "typescript": "stopthatslop-ts-node-v1",
+    "go": "stopthatslop-go-v1",
+    "android": "stopthatslop-android-v1",
 }
 
 

@@ -1,22 +1,24 @@
-# deslop
+# stopthatslop
+
+Formerly published as deslop.
 
 Rules your coding agents read **before** they write code — across
 **Java/Spring**, **Python/FastAPI**, **TypeScript/Node/React**, **Go**,
 and **Android**. CI gates the patterns we can *prove* agents emit.
 
-Most tools comment on a pull request after the damage is done. deslop
+Most tools comment on a pull request after the damage is done. StopThatSlop
 puts a small pack of invariants in the agent's context first, then runs a
 deterministic checker on the subset with verified detectors.
 
 ```mermaid
 flowchart LR
   subgraph beforeWrite [Before the agent writes]
-    A["Your repo"] --> B["deslop skills"]
+    A["Your repo"] --> B["stopthatslop skills"]
     B --> C["Agent reads rule"]
     C --> D["Code follows it"]
   end
   subgraph afterSlip [If it still slips]
-    D --> E["deslop check"]
+    D --> E["stopthatslop check"]
     E -->|"checker"| F["Build fails"]
     E -->|"teach-only"| G["Warn only"]
   end
@@ -24,16 +26,16 @@ flowchart LR
 
 ## Stacks
 
-Five packs ship in this repo. `deslop learn` also profiles **Go**.
+Five packs ship in this repo. `stopthatslop learn` also profiles **Go**.
 
 | Pack | Languages / frameworks | Rules | CI today |
 |---|---|---|---|
-| [`deslop-java-spring`](skills/deslop-java-spring/SKILL.md) | Java, Spring, JPA | 11 | **11 checkers** |
-| [`deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 13 | **8 checkers**, 5 teach-only |
-| [`deslop-ts-node`](skills/deslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 12 | **8 checkers**, 4 teach-only |
-| [`deslop-go`](skills/deslop-go/SKILL.md) | Go, net/http, database/sql | 8 | **8 checkers** |
-| [`deslop-android`](skills/deslop-android/SKILL.md) | Kotlin, Android, Compose | 3 | **3 checkers** |
-| `deslop learn` | Go, Python, TypeScript, Java | — | measures conventions; does not install a pack |
+| [`stopthatslop-java-spring`](skills/stopthatslop-java-spring/SKILL.md) | Java, Spring, JPA | 11 | **11 checkers** |
+| [`stopthatslop-python-fastapi`](skills/stopthatslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 13 | **8 checkers**, 5 teach-only |
+| [`stopthatslop-ts-node`](skills/stopthatslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 12 | **8 checkers**, 4 teach-only |
+| [`stopthatslop-go`](skills/stopthatslop-go/SKILL.md) | Go, net/http, database/sql | 8 | **8 checkers** |
+| [`stopthatslop-android`](skills/stopthatslop-android/SKILL.md) | Kotlin, Android, Compose | 3 | **3 checkers** |
+| `stopthatslop learn` | Go, Python, TypeScript, Java | — | measures conventions; does not install a pack |
 
 ```mermaid
 flowchart TB
@@ -45,18 +47,18 @@ flowchart TB
     A["Android<br/>3 CI gates"]
   end
   subgraph discover [What you can measure]
-    L["deslop learn<br/>Go, Python, TS, Java"]
+    L["stopthatslop learn<br/>Go, Python, TS, Java"]
   end
   available --> discover
 ```
 
-`deslop install` writes the **Java/Spring** pack-index into a target repo.
+`stopthatslop install` writes the **Java/Spring** pack-index into a target repo.
 Python, TypeScript, Go, and Android packs live as skills here — copy the
 pack-index directory plus its `no-*` skills into your agent's layout (see
 [Using a pack](#using-a-pack)). Multi-pack install is not wired yet; do
-not pretend `deslop install` drops FastAPI or Node rules into a repo.
+not pretend `stopthatslop install` drops FastAPI or Node rules into a repo.
 
-`deslop check` **does** run every pack whose language is present in the
+`stopthatslop check` **does** run every pack whose language is present in the
 repo. Pass `--pack python` (or `ts`, `go`, `android`, `java`) to scope it.
 
 ## How a rule reaches CI
@@ -76,7 +78,7 @@ flowchart TD
 ```
 
 The gated checkers are portable AST detectors under `checkers/`. They are
-not Motorrad house rules (no web-layer folder names, no service-locator
+not project-specific house rules (no web-layer folder names, no service-locator
 bans, no blanket `no-use-effect`). The original three Java engine rules
 (JPQL, RestTemplate timeouts, `@Transactional` IO) stay on the Java
 engine so existing CI keeps the same findings.
@@ -104,7 +106,7 @@ once and SHA-256 pinned.
 
 ### Python / FastAPI
 
-Pack index: [`skills/deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.md).
+Pack index: [`skills/stopthatslop-python-fastapi`](skills/stopthatslop-python-fastapi/SKILL.md).
 
 | Rule | Enforcement | Invariant |
 |---|---|---|
@@ -124,7 +126,7 @@ Pack index: [`skills/deslop-python-fastapi`](skills/deslop-python-fastapi/SKILL.
 
 ### TypeScript / Node / React
 
-Pack index: [`skills/deslop-ts-node`](skills/deslop-ts-node/SKILL.md).
+Pack index: [`skills/stopthatslop-ts-node`](skills/stopthatslop-ts-node/SKILL.md).
 Needs **Node + npm** (TypeScript parser under `checkers/tsast`).
 
 | Rule | Enforcement | Invariant |
@@ -144,7 +146,7 @@ Needs **Node + npm** (TypeScript parser under `checkers/tsast`).
 
 ### Go
 
-Pack index: [`skills/deslop-go`](skills/deslop-go/SKILL.md). Needs **Go 1.21+**.
+Pack index: [`skills/stopthatslop-go`](skills/stopthatslop-go/SKILL.md). Needs **Go 1.21+**.
 
 | Rule | Enforcement | Invariant |
 |---|---|---|
@@ -159,7 +161,7 @@ Pack index: [`skills/deslop-go`](skills/deslop-go/SKILL.md). Needs **Go 1.21+**.
 
 ### Android
 
-Pack index: [`skills/deslop-android`](skills/deslop-android/SKILL.md).
+Pack index: [`skills/stopthatslop-android`](skills/stopthatslop-android/SKILL.md).
 
 | Rule | Enforcement | Invariant |
 |---|---|---|
@@ -171,13 +173,13 @@ Pack index: [`skills/deslop-android`](skills/deslop-android/SKILL.md).
 
 ```mermaid
 flowchart TD
-  Clone["Clone deslop"] --> Pick{"Which stack?"}
-  Pick -->|"Java / Spring"| Inst["deslop install"]
+  Clone["Clone stopthatslop"] --> Pick{"Which stack?"}
+  Pick -->|"Java / Spring"| Inst["stopthatslop install"]
   Pick -->|"Python / FastAPI"| CopyP["Copy Python skills"]
   Pick -->|"TypeScript / Node"| CopyT["Copy TS skills"]
   Pick -->|"Go"| CopyG["Copy Go skills"]
   Pick -->|"Android"| CopyA["Copy Android skills"]
-  Inst --> CI["deslop check"]
+  Inst --> CI["stopthatslop check"]
   CopyP --> CI
   CopyT --> CI
   CopyG --> CI
@@ -187,28 +189,28 @@ flowchart TD
 ### Check any stack (CI)
 
 ```bash
-git clone https://github.com/Amaresh/deslop && cd deslop
+git clone https://github.com/StopThatSlop/stopthatslop && cd stopthatslop
 pip install -e .            # engine + deps (pydantic, PyYAML)
 
 # Inspect packs (writes nothing)
-python3 scripts/deslop.py review
+python3 scripts/stopthatslop.py review
 
 # Auto-detect languages in the repo and gate their checkers
-python3 scripts/deslop.py check --repo-root /path/to/your/repo
+python3 scripts/stopthatslop.py check --repo-root /path/to/your/repo
 
 # Or pin a pack
-python3 scripts/deslop.py check --repo-root /path/to/your/repo --pack python
+python3 scripts/stopthatslop.py check --repo-root /path/to/your/repo --pack python
 ```
 
 ### Java / Spring (install + CI)
 
 ```bash
-python3 scripts/deslop.py install --target /path/to/your/repo
+python3 scripts/stopthatslop.py install --target /path/to/your/repo
 ```
 
 Install writes one namespaced pack-index skill
-(`skills/deslop/deslop-java-spring/`) into the target's `.agents/skills/`
-layout plus reference files, reports collisions with existing agent
+(`.agents/skills/stopthatslop/stopthatslop-java-spring/`) into the target
+plus reference files, reports collisions with existing agent
 instructions, pins the installed version for `update`/`rollback`, and never
 dumps sibling skills.
 
@@ -222,26 +224,26 @@ present).
 
 ### Python, TypeScript, Go, or Android (skills in this repo)
 
-There is no `deslop install --pack python` yet. To steer an agent:
+There is no `stopthatslop install --pack python` yet. To steer an agent:
 
-1. Copy the pack-index folder (`skills/deslop-python-fastapi/`,
-   `skills/deslop-ts-node/`, `skills/deslop-go/`, or
-   `skills/deslop-android/`).
+1. Copy the pack-index folder (`skills/stopthatslop-python-fastapi/`,
+   `skills/stopthatslop-ts-node/`, `skills/stopthatslop-go/`, or
+   `skills/stopthatslop-android/`).
 2. Copy each `skills/no-*` directory listed in that pack's `pack.yaml`.
 3. Point your harness at those skills the same way you would any other
    SKILL.md pack.
 
-`deslop check --pack <alias>` still gates the checker rules even if you
+`stopthatslop check --pack <alias>` still gates the checker rules even if you
 never install the skills.
 
-## deslop learn — extract the rules a codebase already follows
+## stopthatslop learn — extract the rules a codebase already follows
 
-`deslop learn` measures the conventions a repository actually follows (and
+`stopthatslop learn` measures the conventions a repository actually follows (and
 the ones it keeps violating), then emits candidate rules with evidence.
 Works on **Go, Python, TypeScript, and Java**.
 
 ```bash
-python3 scripts/learn.py --repo /path/to/repo --lang go --out learn-out
+python3 scripts/stopthatslop.py learn --repo /path/to/repo --lang go --out learn-out
 ```
 
 ```mermaid
@@ -255,11 +257,10 @@ flowchart TD
 Learn is the "find rules" counterpart to "apply rules": point it at a repo
 and it tells you what that repo would teach a new contributor.
 
-## What deslop is not
+## What stopthatslop is not
 
-- Not an AI code reviewer. It does not comment on pull requests or scan
-  diffs after the fact; it shapes what the agent writes and gates a
-  verified subset deterministically.
+- Not a linter. Not a PR bot. These are rules the agent reads before it
+  types. StopThatSlop does not comment on pull requests.
 - No auto-attach guarantees. Whether your agent loads the installed skill
   depends on your harness; discovery behavior varies.
 - Teach rules are not gates and must not be sold as gates.
