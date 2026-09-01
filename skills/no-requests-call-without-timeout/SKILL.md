@@ -2,7 +2,8 @@
 name: no-requests-call-without-timeout
 description: >-
   Do not call requests.get/post/put/patch/delete/head without timeout=. Use only when editing Python requests calls. Do not use for httpx (use the httpx timeout skill) or test mocks.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

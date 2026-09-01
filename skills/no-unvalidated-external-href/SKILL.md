@@ -2,7 +2,8 @@
 name: no-unvalidated-external-href
 description: >-
   Do not put an untrusted expression into href without an http(s) allowlist. Use only when editing JSX/TSX links. Do not use for static href strings or resource <link rel> tags.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.{ts,tsx}'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

@@ -5,7 +5,8 @@ description: >-
   reference. Keep the task, surface its errors, and cancel it on shutdown.
   Use only when editing Python asyncio task spawning or FastAPI startup/shutdown
   hooks. Do not use for thread pools, Celery workers, or sync threads.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

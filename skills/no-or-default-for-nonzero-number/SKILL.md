@@ -2,7 +2,8 @@
 name: no-or-default-for-nonzero-number
 description: >-
   Do not write `n || 1` (or other nonzero numeric defaults) when 0 is a valid value. Use ?? or an explicit null check. Use only when editing TypeScript numeric defaults. Do not use for boolean coercion, string fallbacks, or `|| 0` NaN guards.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.{ts,tsx}'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

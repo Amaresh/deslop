@@ -2,7 +2,8 @@
 name: no-query-string-concatenation
 description: >-
   Do not build JPQL or SQL with + concatenation. Use parameters. Use only when editing Java query strings. Do not use for log messages that happen to contain the word from.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

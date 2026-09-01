@@ -2,7 +2,8 @@
 name: no-unbounded-findall-without-pagination
 description: >-
   Do not call repository.findAll() from a web/service path without pagination. Use only when editing Spring service/controller Java. Do not use for tests, CLI importers, or ModuleFinder.findAll.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

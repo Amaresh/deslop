@@ -2,7 +2,8 @@
 name: no-handler-detached-goroutine
 description: >-
   Do not start a goroutine from an HTTP handler without a context from the request. Use only when editing Go HTTP handlers. Do not use for process-wide workers started at main.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

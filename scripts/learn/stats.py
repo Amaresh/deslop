@@ -24,10 +24,19 @@ class Candidate:
     enforcement: str = "teach-only"   # or "checker-candidate"
     confidence: str = "low"           # high | medium | low
     source: str = "frequency"         # frequency | fix-churn | llm-induction
+    polarity: str = "adoption"        # adoption | violation
 
     @property
     def ratio(self) -> float:
+        """Adoption of the good convention: matched / total."""
         return self.matched / self.total if self.total else 0.0
+
+
+def should_emit(c: Candidate) -> bool:
+    """Frequency gate. Only adoption polarity may use ≥0.8 / ≤0.5."""
+    if c.polarity != "adoption":
+        return False
+    return c.total >= 3 and (c.ratio >= 0.8 or c.ratio <= 0.5)
 
 
 def to_yaml(candidates: list[Candidate]) -> str:
@@ -41,6 +50,7 @@ def to_yaml(candidates: list[Candidate]) -> str:
         lines.append(f"      matched: {c.matched}")
         lines.append(f"      total: {c.total}")
         lines.append(f"      ratio: {c.ratio:.3f}")
+        lines.append(f"    polarity: {c.polarity}")
         lines.append(f"    enforcement: {c.enforcement}")
         lines.append(f"    confidence: {c.confidence}")
         lines.append(f"    source: {c.source}")

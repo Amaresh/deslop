@@ -6,7 +6,8 @@ description: >-
   a ref. Use only when editing React JSX form elements. Do not use for
   non-React frameworks, custom components that manage this internally, or
   file inputs (always uncontrolled).
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.tsx'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

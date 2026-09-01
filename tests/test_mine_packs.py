@@ -85,3 +85,17 @@ def test_java_mine_findall_and_controller_fire() -> None:
     clean_ids = {finding.rule_id for finding in clean.findings}
     assert "java.reliability.no-unbounded-findall-without-pagination" not in clean_ids
     assert "java.architecture.no-controller-direct-repository-access" not in clean_ids
+
+
+def test_java_after_commit_dispatch_fires_on_dirty_fixture() -> None:
+    rid = "java.reliability.no-after-commit-dispatch-from-after-commit-listener"
+    dirty = run_check(
+        repo_root=PACK_ROOT / "fixtures" / "dirty",
+        packs=[load_pack_by_id("java")],
+    )
+    assert rid in {finding.rule_id for finding in dirty.findings}
+    clean = run_check(
+        repo_root=PACK_ROOT / "fixtures" / "clean",
+        packs=[load_pack_by_id("java")],
+    )
+    assert rid not in {finding.rule_id for finding in clean.findings}

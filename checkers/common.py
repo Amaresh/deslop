@@ -29,6 +29,8 @@ _SKIP_DIR_PARTS = {
     ".next", "coverage", "generated", "androidTest", ".gradle", "e2e",
 }
 
+_CORPUS_DIR_PARTS = frozenset({"fixtures", "agent-runs"})
+
 _TEST_SUFFIX = {
     "go": ("_test.go", "_tests.go"),
     "python": ("_test.py",),
@@ -69,3 +71,9 @@ def is_skipped(filename: str, lang: str = "go",
         if name.endswith(suf):
             return True
     return False
+
+
+def is_corpus_rel(rel: str) -> bool:
+    """True when rel (from repo-root) is under a pack test corpus."""
+
+    return bool(set(rel.replace("\\", "/").split("/")) & _CORPUS_DIR_PARTS)

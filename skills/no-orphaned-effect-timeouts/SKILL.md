@@ -2,7 +2,8 @@
 name: no-orphaned-effect-timeouts
 description: >-
   Do not call setTimeout/setInterval inside useEffect without clearing them in the cleanup. Use only when editing React effects. Do not use for timers in event handlers or non-React code.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.{ts,tsx}'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

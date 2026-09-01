@@ -30,9 +30,9 @@ Five packs ship in this repo. `stopthatslop learn` also profiles **Go**.
 
 | Pack | Languages / frameworks | Rules | CI today |
 |---|---|---|---|
-| [`stopthatslop-java-spring`](skills/stopthatslop-java-spring/SKILL.md) | Java, Spring, JPA | 11 | **11 checkers** |
+| [`stopthatslop-java-spring`](skills/stopthatslop-java-spring/SKILL.md) | Java, Spring, JPA | 12 | **12 checkers** |
 | [`stopthatslop-python-fastapi`](skills/stopthatslop-python-fastapi/SKILL.md) | Python, FastAPI, Pydantic, httpx | 13 | **8 checkers**, 5 teach-only |
-| [`stopthatslop-ts-node`](skills/stopthatslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 12 | **8 checkers**, 4 teach-only |
+| [`stopthatslop-ts-node`](skills/stopthatslop-ts-node/SKILL.md) | TypeScript, Node, Express, React | 13 | **9 checkers**, 4 teach-only |
 | [`stopthatslop-go`](skills/stopthatslop-go/SKILL.md) | Go, net/http, database/sql | 8 | **8 checkers** |
 | [`stopthatslop-android`](skills/stopthatslop-android/SKILL.md) | Kotlin, Android, Compose | 3 | **3 checkers** |
 | `stopthatslop learn` | Go, Python, TypeScript, Java | — | measures conventions; does not install a pack |
@@ -40,9 +40,9 @@ Five packs ship in this repo. `stopthatslop learn` also profiles **Go**.
 ```mermaid
 flowchart TB
   subgraph available [What you can use today]
-    J["Java / Spring<br/>install + 11 CI gates"]
+    J["Java / Spring<br/>install + 12 CI gates"]
     P["Python / FastAPI<br/>8 CI gates + 5 teach"]
-    T["TypeScript / Node<br/>8 CI gates + 4 teach"]
+    T["TypeScript / Node<br/>9 CI gates + 4 teach"]
     G["Go<br/>8 CI gates"]
     A["Android<br/>3 CI gates"]
   end
@@ -52,14 +52,10 @@ flowchart TB
   available --> discover
 ```
 
-`stopthatslop install` writes the **Java/Spring** pack-index into a target repo.
-Python, TypeScript, Go, and Android packs live as skills here — copy the
-pack-index directory plus its `no-*` skills into your agent's layout (see
-[Using a pack](#using-a-pack)). Multi-pack install is not wired yet; do
-not pretend `stopthatslop install` drops FastAPI or Node rules into a repo.
-
-`stopthatslop check` **does** run every pack whose language is present in the
-repo. Pass `--pack python` (or `ts`, `go`, `android`, `java`) to scope it.
+`stopthatslop install --pack <java|python|ts|go|android>` writes that pack's
+index plus glob-scoped Cursor rules. Pass the alias or the pack id.
+`stopthatslop check` runs every pack whose language is present in the repo,
+or pin one with `--pack python` (or `ts`, `go`, `android`, `java`).
 
 ## How a rule reaches CI
 
@@ -79,9 +75,9 @@ flowchart TD
 
 The gated checkers are portable AST detectors under `checkers/`. They are
 not project-specific house rules (no web-layer folder names, no service-locator
-bans, no blanket `no-use-effect`). The original three Java engine rules
-(JPQL, RestTemplate timeouts, `@Transactional` IO) stay on the Java
-engine so existing CI keeps the same findings.
+bans, no blanket `no-use-effect`). JPQL optional-filters, RestTemplate
+timeouts, and `@Transactional` IO are the same JavaParser checkers as the
+rest of the Java pack.
 
 ## Pack contents
 
@@ -100,6 +96,7 @@ engine so existing CI keeps the same findings.
 | `no-eager-to-many-fetch` | **checker** | No `FetchType.EAGER` on to-many associations |
 | `no-controller-direct-repository-access` | **checker** | Controllers do not inject repositories |
 | `no-unbounded-findall-without-pagination` | **checker** | No unbounded `findAll()` on a request path |
+| `no-after-commit-dispatch-from-after-commit-listener` | **checker** | No `dispatchAfterCommit*` / `registerSynchronization` from AFTER_COMMIT listeners |
 
 Java AST checkers need **JDK 21** (`javac` / `java`). JavaParser is fetched
 once and SHA-256 pinned.
@@ -139,6 +136,7 @@ Needs **Node + npm** (TypeScript parser under `checkers/tsast`).
 | `no-orphaned-effect-timeouts` | **checker** | Clear effect timers on cleanup |
 | `no-eager-heavy-dependency-import` | **checker** | Do not statically import lodash/moment-class libs |
 | `no-or-default-for-nonzero-number` | **checker** | Do not `n \|\| 20` when 0 is valid |
+| `no-node-builtin-in-client-module` | **checker** | No `node:fs` / `path` / `child_process` in `'use client'` modules |
 | `no-floating-promises` | teach-only | Await or handle every promise (needs types) |
 | `no-unvalidated-env-at-module-top-level` | teach-only | Lazy, validated env |
 | `no-non-null-array-index` | teach-only | Bounds-check; do not silence with `!` |
@@ -173,46 +171,46 @@ Pack index: [`skills/stopthatslop-android`](skills/stopthatslop-android/SKILL.md
 
 ```mermaid
 flowchart TD
-  Clone["Clone stopthatslop"] --> Pick{"Which stack?"}
-  Pick -->|"Java / Spring"| Inst["stopthatslop install"]
-  Pick -->|"Python / FastAPI"| CopyP["Copy Python skills"]
-  Pick -->|"TypeScript / Node"| CopyT["Copy TS skills"]
-  Pick -->|"Go"| CopyG["Copy Go skills"]
-  Pick -->|"Android"| CopyA["Copy Android skills"]
+  Clone["Clone stopthatslop"] --> Inst["stopthatslop install --pack java|python|ts|go|android"]
   Inst --> CI["stopthatslop check"]
-  CopyP --> CI
-  CopyT --> CI
-  CopyG --> CI
-  CopyA --> CI
 ```
 
 ### Check any stack (CI)
 
 ```bash
 git clone https://github.com/StopThatSlop/stopthatslop && cd stopthatslop
-pip install -e .            # engine + deps (pydantic, PyYAML)
+pip install -e .            # puts `stopthatslop` on PATH
 
-# Inspect packs (writes nothing)
-python3 scripts/stopthatslop.py review
-
-# Auto-detect languages in the repo and gate their checkers
-python3 scripts/stopthatslop.py check --repo-root /path/to/your/repo
-
-# Or pin a pack
-python3 scripts/stopthatslop.py check --repo-root /path/to/your/repo --pack python
+stopthatslop review
+stopthatslop check --repo-root /path/to/your/repo
+stopthatslop check --repo-root /path/to/your/repo --pack python
 ```
 
-### Java / Spring (install + CI)
+### Install a pack
+
+`--pack` is required. Aliases: `java`, `python`, `ts`, `go`, `android`
+(or the full pack id).
 
 ```bash
-python3 scripts/stopthatslop.py install --target /path/to/your/repo
+stopthatslop install --target . --pack java
+stopthatslop install --target . --pack python
 ```
 
-Install writes one namespaced pack-index skill
-(`.agents/skills/stopthatslop/stopthatslop-java-spring/`) into the target
-plus reference files, reports collisions with existing agent
-instructions, pins the installed version for `update`/`rollback`, and never
-dumps sibling skills.
+Install writes:
+
+- Pack-index + references under
+  `.agents/skills/stopthatslop/<pack-folder>/`
+- Glob-scoped Cursor rules
+  `.cursor/rules/stopthatslop-<skill>.mdc` with `alwaysApply: false`
+  so the harness *can* load them when matching files are in context
+- If the target already has `.claude/`, the same pack under
+  `.claude/skills/stopthatslop/<pack-folder>/`
+- If the target already has `.github/`, Copilot instructions under
+  `.github/instructions/stopthatslop-<pack>.instructions.md`
+
+It reports collisions with existing agent instructions, pins the version
+for `update`/`rollback`, and does not rewrite `AGENTS.md` unless you pass
+`--write-agents-md` (one-line pointer, never a generated dump).
 
 ```bash
 scripts/ci.sh /path/to/your/repo   # exit 1 on checker findings only
@@ -220,18 +218,7 @@ scripts/ci.sh /path/to/your/repo   # exit 1 on checker findings only
 
 See [`ci/github-action.yml.example`](ci/github-action.yml.example) for a
 GitHub Actions setup (Python plus JDK / Node / Go when those stacks are
-present).
-
-### Python, TypeScript, Go, or Android (skills in this repo)
-
-There is no `stopthatslop install --pack python` yet. To steer an agent:
-
-1. Copy the pack-index folder (`skills/stopthatslop-python-fastapi/`,
-   `skills/stopthatslop-ts-node/`, `skills/stopthatslop-go/`, or
-   `skills/stopthatslop-android/`).
-2. Copy each `skills/no-*` directory listed in that pack's `pack.yaml`.
-3. Point your harness at those skills the same way you would any other
-   SKILL.md pack.
+present). This repo's own workflow is `.github/workflows/check.yml`.
 
 `stopthatslop check --pack <alias>` still gates the checker rules even if you
 never install the skills.
@@ -243,7 +230,7 @@ the ones it keeps violating), then emits candidate rules with evidence.
 Works on **Go, Python, TypeScript, and Java**.
 
 ```bash
-python3 scripts/stopthatslop.py learn --repo /path/to/repo --lang go --out learn-out
+stopthatslop learn --repo /path/to/repo --lang go --out learn-out
 ```
 
 ```mermaid
@@ -261,8 +248,9 @@ and it tells you what that repo would teach a new contributor.
 
 - Not a linter. Not a PR bot. These are rules the agent reads before it
   types. StopThatSlop does not comment on pull requests.
-- No auto-attach guarantees. Whether your agent loads the installed skill
-  depends on your harness; discovery behavior varies.
+- No auto-attach guarantees. Install writes glob-scoped Cursor rules so the
+  harness *can* load them when matching files are in context; the harness
+  still decides. Discovery behavior varies.
 - Teach rules are not gates and must not be sold as gates.
 - Not "works on any Spring / FastAPI / Node repo." Packs are small and
   specific. Java, Python, TypeScript, Go, and Android each gate the

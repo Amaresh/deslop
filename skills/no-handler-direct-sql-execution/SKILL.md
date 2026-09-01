@@ -2,7 +2,8 @@
 name: no-handler-direct-sql-execution
 description: >-
   Do not call Query/Exec/Begin from an HTTP handler. Move SQL to a store. Use only when editing Go HTTP handlers. Do not use for store packages or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

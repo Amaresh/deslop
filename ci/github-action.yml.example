@@ -1,9 +1,8 @@
 # Copy into a consuming repo that vendors this pack as ./stopthatslop (a checkout of
 # the stopthatslop repository). Not a hosted Action.
 #
-# scripts/ci.sh puts scripts/ on PYTHONPATH and imports the engine from
-# src/ (or from an installed stopthatslop-engine); the engine needs Python 3.11+,
-# pydantic>=2 and PyYAML>=6, which the editable install below provides.
+# scripts/ci.sh puts scripts/ on PYTHONPATH. Python 3.11+ and PyYAML>=6;
+# `pip install -e .` provides the `stopthatslop` console script.
 #
 # Extra toolchains, only if that language is in the repo:
 #   Java AST checkers: JDK 21 (javac/java). JavaParser jar is fetched once.
@@ -38,7 +37,7 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Install stopthatslop engine
+      - name: Install stopthatslop
         run: pip install -e ./stopthatslop
 
       - name: Run pack checker

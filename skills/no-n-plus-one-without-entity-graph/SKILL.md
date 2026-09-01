@@ -2,7 +2,8 @@
 name: no-n-plus-one-without-entity-graph
 description: >-
   Do not call a collection finder then lazily touch to-many associations in a loop. Use @EntityGraph or a fetch join. Use only when editing Spring Data repositories and callers. Do not use for eager-named finders (WithGraph, JoinFetch) or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

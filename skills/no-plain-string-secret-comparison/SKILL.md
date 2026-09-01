@@ -2,7 +2,8 @@
 name: no-plain-string-secret-comparison
 description: >-
   Do not compare request secrets with ==, !=, EqualFold, or bytes.Equal. Use crypto/subtle. Use only when editing Go secret checks. Do not use for non-secret string compares or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

@@ -2,7 +2,8 @@
 name: no-file-upload-without-validation
 description: >-
   Do not accept MultipartFile/Part without size, type, or name checks. Use only when editing Java upload endpoints. Do not use for internally generated files or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

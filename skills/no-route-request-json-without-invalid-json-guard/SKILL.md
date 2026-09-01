@@ -2,7 +2,8 @@
 name: no-route-request-json-without-invalid-json-guard
 description: >-
   Do not call Flask/Starlette request.json in a route without catching invalid JSON. Use only when editing Python request handlers that parse JSON bodies. Do not use for FastAPI pydantic body params or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

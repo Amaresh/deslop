@@ -18,6 +18,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -111,6 +112,7 @@ public final class JavaAstFacts {
         List<String> fields = new ArrayList<>();
         List<String> annotations = new ArrayList<>();
         List<String> concats = new ArrayList<>();
+        List<String> stringConstants = new ArrayList<>();
 
         for (AnnotationExpr ann : cu.findAll(AnnotationExpr.class)) {
             annotations.add(renderAnnotationFact(ann));
@@ -148,6 +150,19 @@ public final class JavaAstFacts {
                             "owner", str(owner),
                             "annotations", arr(renderAnns(fd))
                     ));
+                    var.getInitializer().ifPresent(init -> {
+                        if (!isStringConstInit(init)) {
+                            return;
+                        }
+                        String eval = tryEvalString(init);
+                        stringConstants.add(obj(
+                                "name", str(var.getNameAsString()),
+                                "owner", str(type.getNameAsString()),
+                                "line", Integer.toString(lineOf(var)),
+                                "value", eval == null ? "null" : str(eval),
+                                "expr", str(trunc(compact(init.toString())))
+                        ));
+                    });
                 }
             }
             BodyBag instanceInit = new BodyBag();
@@ -193,7 +208,8 @@ public final class JavaAstFacts {
                 "methods", arr(methods),
                 "fields", arr(fields),
                 "annotations", arr(annotations),
-                "string_concats", arr(concats)
+                "string_concats", arr(concats),
+                "string_constants", arr(stringConstants)
         );
     }
 
@@ -426,10 +442,19 @@ public final class JavaAstFacts {
     private static String renderAnnotationFact(AnnotationExpr ann) {
         Map<String, String> members = new LinkedHashMap<>();
         if (ann instanceof SingleMemberAnnotationExpr) {
-            members.put("value", compact(((SingleMemberAnnotationExpr) ann).getMemberValue().toString()));
+            Expression memberValue = ((SingleMemberAnnotationExpr) ann).getMemberValue();
+            members.put("value", compact(memberValue.toString()));
+            String resolved = tryEvalString(memberValue);
+            if (resolved != null) {
+                members.put("value_resolved", resolved);
+            }
         } else if (ann instanceof NormalAnnotationExpr) {
             for (MemberValuePair pair : ((NormalAnnotationExpr) ann).getPairs()) {
                 members.put(pair.getNameAsString(), compact(pair.getValue().toString()));
+                String resolved = tryEvalString(pair.getValue());
+                if (resolved != null) {
+                    members.put(pair.getNameAsString() + "_resolved", resolved);
+                }
             }
         } else if (ann instanceof MarkerAnnotationExpr) {
             // no members
@@ -535,6 +560,44 @@ public final class JavaAstFacts {
             e = ((EnclosedExpr) e).getInner();
         }
         return e;
+    }
+
+    private static String tryEvalString(Expression expr) {
+        Expression e = peel(expr);
+        if (e instanceof StringLiteralExpr) {
+            return ((StringLiteralExpr) e).getValue();
+        }
+        if (e instanceof TextBlockLiteralExpr) {
+            return ((TextBlockLiteralExpr) e).getValue();
+        }
+        if (e instanceof BinaryExpr) {
+            BinaryExpr bin = (BinaryExpr) e;
+            if (bin.getOperator() != BinaryExpr.Operator.PLUS) {
+                return null;
+            }
+            String left = tryEvalString(bin.getLeft());
+            String right = tryEvalString(bin.getRight());
+            if (left != null && right != null) {
+                return left + right;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isStringConstInit(Expression expr) {
+        if (tryEvalString(expr) != null) {
+            return true;
+        }
+        Expression e = peel(expr);
+        if (e instanceof NameExpr || e instanceof FieldAccessExpr) {
+            return true;
+        }
+        if (e instanceof BinaryExpr) {
+            BinaryExpr bin = (BinaryExpr) e;
+            return bin.getOperator() == BinaryExpr.Operator.PLUS
+                    && (isStringConstInit(bin.getLeft()) || isStringConstInit(bin.getRight()));
+        }
+        return false;
     }
 
     private static String simpleLhs(Expression target) {

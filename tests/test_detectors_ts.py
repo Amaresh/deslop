@@ -14,6 +14,7 @@ from no_eager_heavy_dependency_import import detect as detect_heavy  # noqa: E40
 from no_unvalidated_external_href import detect as detect_href  # noqa: E402
 from no_orphaned_effect_timeouts import detect as detect_timeout  # noqa: E402
 from no_mixed_controlled_uncontrolled import detect as detect_mixed  # noqa: E402
+from no_node_builtin_in_client_module import detect as detect_node_client  # noqa: E402
 
 
 # ---------- typescript.http.no-fetch-without-abort-timeout ----------
@@ -546,3 +547,47 @@ def test_mixed_test_file_skipped():
     src = BAD_MIXED[0]
     assert detect_mixed(src, filename="Field.test.tsx") == []
     assert len(detect_mixed(src, filename="Field.tsx")) >= 1
+
+
+# ---------- typescript.web.no-node-builtin-in-client-module ----------
+
+BAD_NODE_CLIENT = [
+    "'use client'\nimport { readFileSync } from 'node:fs'\nexport const n = 1\n",
+    "'use client'\nimport path from 'path'\nexport const n = 1\n",
+    '"use client"\nconst fs = require("fs")\nexport const n = 1\n',
+    "'use client'\nimport { exec } from 'child_process'\nexport const n = 1\n",
+]
+
+NEAR_MISS_NODE_CLIENT = [
+    "'use client'\nexport function Page() { return null }\n",
+    "import { readFileSync } from 'node:fs'\nexport const n = 1\n",
+    "'use client'\nimport type { PathLike } from 'fs'\nexport const n = 1\n",
+    "'use client'\nimport pick from 'lodash/pick.js'\nexport const n = 1\n",
+    "// 'use client'\nimport { readFileSync } from 'node:fs'\nexport const n = 1\n",
+    'import fs from "node:fs/promises"\nconst files = { page: `"use client"; import {x} from "react"` }\n',
+]
+
+
+@pytest.mark.parametrize(
+    "src",
+    BAD_NODE_CLIENT,
+    ids=["node-fs", "path", "require-fs", "child_process"],
+)
+def test_node_builtin_in_client_bad_is_flagged(src):
+    assert len(detect_node_client(src, filename="page.tsx")) >= 1
+
+
+@pytest.mark.parametrize(
+    "src",
+    NEAR_MISS_NODE_CLIENT,
+    ids=["client-no-node", "server-fs", "type-only", "lodash",
+         "commented-directive", "fixture-string"],
+)
+def test_node_builtin_in_client_near_misses_pass(src):
+    assert detect_node_client(src, filename="page.tsx") == []
+
+
+def test_node_builtin_in_client_test_file_skipped():
+    src = BAD_NODE_CLIENT[0]
+    assert detect_node_client(src, filename="page.test.tsx") == []
+    assert len(detect_node_client(src, filename="page.tsx")) >= 1

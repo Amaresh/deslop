@@ -2,7 +2,8 @@
 name: no-java-raw-pii-logging
 description: >-
   Do not log email, phone, or similar PII fields in plaintext. Use only when editing Java logging calls. Do not use for required audit logs or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

@@ -2,7 +2,8 @@
 name: no-runblocking-hotpath
 description: >-
   Do not call runBlocking from composables, Activities, or other UI entrypoints. Use only when editing Kotlin Android UI. Do not use for tests or isolated workers.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.kt'
 license: MIT
 metadata:
   pack: stopthatslop-android-v1

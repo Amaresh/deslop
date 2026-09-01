@@ -4,7 +4,8 @@ description: >-
   Go HTTP and database/sql pack. Use when editing Go net/http handlers,
   websocket upgraders, or database/sql Scan/Query. One pack, several
   invariants. Apply only the section that matches the files in scope.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

@@ -6,7 +6,8 @@ description: >-
   editing TypeScript/Node configuration code and module initializers. Do not
   use for test fixtures, scripts with documented required env, or values with
   genuine non-secret defaults validated elsewhere.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

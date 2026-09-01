@@ -1,4 +1,4 @@
-"""Run portable AST checkers (not Java-engine adapters)."""
+"""Run portable AST checkers."""
 from __future__ import annotations
 
 import importlib.util
@@ -12,15 +12,7 @@ _CHECKERS_PATH = str(CHECKERS)
 if _CHECKERS_PATH not in sys.path:
     sys.path.insert(0, _CHECKERS_PATH)
 
-from common import LANG_GLOBS, Finding, is_skipped  # noqa: E402
-
-# Already gated by the Java engine; do not double-run via mine.
-ENGINE_OWNED_RULE_IDS = frozenset(
-    {
-        "java.architecture.no-service-layer-transactional-external-io",
-        "java.architecture.no-service-layer-rest-template-without-timeout-shaping",
-    }
-)
+from common import LANG_GLOBS, Finding, is_corpus_rel, is_skipped  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -84,7 +76,7 @@ def iter_sources(
                 rel = path.resolve().relative_to(repo).as_posix()
             except ValueError:
                 continue
-            if is_skipped(rel, lang=lang):
+            if is_skipped(rel, lang=lang) or is_corpus_rel(rel):
                 continue
             if _name_matches_lang(path.name, lang):
                 yield rel, path.resolve()
@@ -96,7 +88,7 @@ def iter_sources(
                 continue
             seen.add(path)
             rel = path.relative_to(repo).as_posix()
-            if is_skipped(rel, lang=lang):
+            if is_skipped(rel, lang=lang) or is_corpus_rel(rel):
                 continue
             yield rel, path
 
@@ -108,7 +100,7 @@ def run_mine(
     changed_files: Sequence[str] | None = None,
 ) -> list[CheckFinding]:
     catalog = load_all_detectors()
-    selected = [rid for rid in rule_ids if rid in catalog and rid not in ENGINE_OWNED_RULE_IDS]
+    selected = [rid for rid in rule_ids if rid in catalog]
     if not selected:
         return []
     by_lang: dict[str, list[Detector]] = {}
@@ -128,10 +120,11 @@ def run_mine(
                     hits = det.detect(source, filename=abs_path)
                 except FileNotFoundError:
                     raise
-                except RuntimeError:
-                    raise
-                except Exception:
-                    continue
+                except Exception as exc:
+                    raise RuntimeError(
+                        f"checker {det.rule_id} failed on {rel}: "
+                        f"{type(exc).__name__}: {exc}"
+                    ) from exc
                 for hit in hits:
                     findings.append(
                         CheckFinding(

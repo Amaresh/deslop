@@ -4,14 +4,19 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-from stats import Candidate, Evidence
-from walk import discover
+from stats import Candidate, Evidence, should_emit
+from walk import discover, rel_to_repo
 
 STACK = "python"
+_REPO_ROOT: Path | None = None
 
 
 def _evidence(path: Path, line: int, excerpt: str) -> Evidence:
-    return Evidence(file=str(path), line=line, excerpt=excerpt[:120])
+    return Evidence(
+        file=rel_to_repo(path, _REPO_ROOT),
+        line=line,
+        excerpt=excerpt[:120],
+    )
 
 
 def _iter_funcs(tree):
@@ -44,11 +49,11 @@ def _async_route_purity(files: list[Path]) -> Candidate:
                 isinstance(n, ast.Call) and any(
                     b in ast.unparse(n.func)[:40] for b in blocking)
                 for n in ast.walk(fn) if isinstance(n, ast.Call))
-            if bad:
+            if not bad:
                 matched += 1
-                if len(ev) < 6:
-                    ev.append(_evidence(f, fn.lineno,
-                                        f"async def {fn.name}"))
+            elif len(ev) < 6:
+                ev.append(_evidence(f, fn.lineno,
+                                    f"async def {fn.name}"))
     return Candidate(
         rule_id="python.api.async-routes-blocking-free",
         stack=STACK,
@@ -198,19 +203,25 @@ def _env_access_style(files: list[Path]) -> Candidate:
 
 
 def analyze(repo_root: str | Path) -> list[Candidate]:
-    files = discover(repo_root, "python")
-    if not files:
-        return []
-    checks = [
-        _async_route_purity,
-        _response_model_convention,
-        _exception_breadth,
-        _sql_interpolation,
-        _env_access_style,
-    ]
-    out = []
-    for check in checks:
-        c = check(files)
-        if c.total >= 3 and (c.ratio >= 0.8 or c.ratio <= 0.5):
-            out.append(c)
-    return out
+    global _REPO_ROOT
+    root = Path(repo_root)
+    _REPO_ROOT = root
+    try:
+        files = discover(root, "python")
+        if not files:
+            return []
+        checks = [
+            _async_route_purity,
+            _response_model_convention,
+            _exception_breadth,
+            _sql_interpolation,
+            _env_access_style,
+        ]
+        out = []
+        for check in checks:
+            c = check(files)
+            if should_emit(c):
+                out.append(c)
+        return out
+    finally:
+        _REPO_ROOT = None

@@ -5,7 +5,8 @@ description: >-
   bypass validators. Normalize input before validation or in the validator
   itself. Use only when editing Python code that constructs or post-processes
   Pydantic models. Do not use for dataclasses, TypedDicts, or ORM models.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

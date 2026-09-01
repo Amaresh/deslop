@@ -5,7 +5,8 @@ description: >-
   AbortSignal.timeout or an AbortController plus setTimeout. Use only when
   editing TypeScript/JavaScript fetch calls in Node or browser code. Do not use
   for axios/got (they carry their own timeout options) or WebSocket connects.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

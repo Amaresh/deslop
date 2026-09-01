@@ -6,7 +6,8 @@ description: >-
   Express/Koa route handlers and middleware. Do not use for React event
   handlers, Python except blocks, or validation errors intentionally mapped
   to 4xx responses.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

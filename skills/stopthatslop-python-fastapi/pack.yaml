@@ -1,9 +1,8 @@
 pack_id: stopthatslop-python-fastapi-v1
 version: "0.2.0"
-invocation: explicit
+invocation: model
+install_namespace: stopthatslop
 lang: python
-
-# Catalog + pack-index. install.py still writes the Java pack-index only.
 
 engine:
   rule_ids: []

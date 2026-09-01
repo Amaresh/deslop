@@ -2,7 +2,8 @@
 name: no-controller-direct-repository-access
 description: >-
   Do not inject a *Repository or *Dao into a @Controller/@RestController. Route through a service. Use only when editing Spring controllers. Do not use for @ControllerAdvice without a repository, or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*Controller.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

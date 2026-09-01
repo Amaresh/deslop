@@ -2,7 +2,8 @@
 name: no-secret-fallback-literal
 description: >-
   Do not default API keys, tokens, or passwords to a string literal when env/config is missing. Fail closed. Use only when editing Java config/secret reads. Do not use for non-secret defaults or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

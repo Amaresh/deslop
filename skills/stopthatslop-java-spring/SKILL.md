@@ -4,7 +4,12 @@ description: >-
   Spring/JPA architecture pack. Use when editing Java *Repository.java,
   *Service.java, *Controller.java, or JPA entities. One pack, several
   invariants. Apply only the section that matches the files in scope.
-disable-model-invocation: true
+disable-model-invocation: false
+paths:
+- '**/*Repository.java'
+- '**/*Service.java'
+- '**/*.java'
+- '**/*Controller.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1
@@ -15,11 +20,12 @@ metadata:
 
 Do not apply every section. Match the file in front of you.
 
-CI gates eleven rules (`enforcement: checker`): three via the Java engine
+CI gates twelve rules (`enforcement: checker`): three via the Java engine
 (JPQL optional-filter, `RestTemplate` timeouts, `@Transactional` external IO)
-and eight portable AST checkers (N+1, query concat, uploads, secret fallbacks,
-PII logs, EAGER to-many, controller→repository, unbounded `findAll`).
-The AST checkers need a JDK so `stopthatslop check` can run JavaParser.
+and nine portable checkers (N+1, query concat, uploads, secret fallbacks,
+PII logs, EAGER to-many, controller→repository, unbounded `findAll`,
+AFTER_COMMIT re-dispatch). The AST checkers need a JDK so
+`stopthatslop check` can run JavaParser.
 
 ## `*Repository.java`
 
@@ -43,3 +49,9 @@ Do not inject a repository. Do not accept uploads without size/type checks.
 ## Entities
 
 No `FetchType.EAGER` on to-many associations. No secret string fallbacks. No raw PII in logs.
+
+## `@TransactionalEventListener`
+
+Do not call `dispatchAfterCommit*` / `scheduleAfterCommit*` /
+`registerSynchronization` from an AFTER_COMMIT listener. Spring 7 runs that
+phase after sync is unbound; run the side effect on this thread instead.

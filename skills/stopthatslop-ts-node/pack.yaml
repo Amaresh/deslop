@@ -1,9 +1,8 @@
 pack_id: stopthatslop-ts-node-v1
 version: "0.2.0"
-invocation: explicit
+invocation: model
+install_namespace: stopthatslop
 lang: ts
-
-# Catalog + pack-index. install.py still writes the Java pack-index only.
 
 engine:
   rule_ids: []
@@ -18,6 +17,7 @@ mine:
     - typescript.ui.no-orphaned-effect-timeouts
     - typescript.performance.no-eager-heavy-dependency-import
     - typescript.correctness.no-or-default-for-nonzero-number
+    - typescript.web.no-node-builtin-in-client-module
 
 frameworks:
   - node
@@ -74,4 +74,8 @@ skills:
   - name: no-or-default-for-nonzero-number
     rule_id: typescript.correctness.no-or-default-for-nonzero-number
     globs: "**/*.{ts,tsx}"
+    enforcement: checker
+  - name: no-node-builtin-in-client-module
+    rule_id: typescript.web.no-node-builtin-in-client-module
+    globs: "**/*.{ts,tsx,js,jsx}"
     enforcement: checker

@@ -14,6 +14,10 @@ from no_service_layer_rest_template_without_timeout_shaping import (  # noqa: E4
     detect as detect_rt,
     RULE_ID as RT_ID,
 )
+from no_jpql_null_or_lower_on_optional_filter import (  # noqa: E402
+    detect as detect_jpql,
+    RULE_ID as JPQL_ID,
+)
 from no_query_string_concatenation import (  # noqa: E402
     detect as detect_q,
     RULE_ID as Q_ID,
@@ -45,6 +49,10 @@ from no_file_upload_without_validation import (  # noqa: E402
 from no_n_plus_one_without_entity_graph import (  # noqa: E402
     detect as detect_n1,
     RULE_ID as N1_ID,
+)
+from no_after_commit_dispatch_from_after_commit_listener import (  # noqa: E402
+    detect as detect_after_commit,
+    RULE_ID as AFTER_COMMIT_ID,
 )
 
 
@@ -294,6 +302,144 @@ def test_rt_test_file_skipped():
 @pytest.mark.parametrize("src", NEAR_MISS_RT, ids=["good", "ctor-factory", "restclient-rf", "webclient-timeout"])
 def test_rt_good_and_near_misses_pass(src):
     assert detect_rt(src) == []
+
+
+# ---------- java.reliability.no-jpql-null-or-lower-on-optional-filter ----------
+
+BAD_JPQL = '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface InvoiceRepository {
+    @Query("SELECT i FROM Invoice i WHERE :status IS NULL OR LOWER(i.status) = LOWER(:status)")
+    java.util.List<Invoice> findByStatus(String status);
+}
+'''
+
+GOOD_JPQL = '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface InvoiceRepository {
+    @Query("SELECT i FROM Invoice i WHERE :status = '' OR LOWER(i.status) = LOWER(:status)")
+    java.util.List<Invoice> findByStatus(String status);
+}
+'''
+
+NEAR_MISS_JPQL = [
+    GOOD_JPQL,
+    '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface InvoiceRepository {
+    @Query("SELECT i FROM Invoice i WHERE :status IS NULL OR i.status = :status")
+    java.util.List<Invoice> findByStatus(String status);
+}
+''',
+    '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface InvoiceRepository {
+    @Query("SELECT i FROM Invoice i WHERE LOWER(i.status) = LOWER(:status)")
+    java.util.List<Invoice> findByStatus(String status);
+}
+''',
+]
+
+
+def test_jpql_bad_is_flagged():
+    findings = detect_jpql(BAD_JPQL)
+    assert len(findings) >= 1
+    assert findings[0].rule_id == JPQL_ID
+    assert "IS NULL OR" in findings[0].message
+
+
+def test_jpql_concat_literals_flagged():
+    src = '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface CustomerRepository {
+    @Query(
+            "SELECT c FROM Customer c "
+                    + "WHERE (:status IS NULL OR LOWER(c.status) = LOWER(:status))")
+    java.util.List<Customer> findByStatus(String status);
+}
+'''
+    assert len(detect_jpql(src)) == 1
+
+
+def test_jpql_text_block_flagged():
+    src = '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface CustomerRepository {
+    @Query("""
+            SELECT c FROM Customer c
+            WHERE :status IS NULL OR LOWER(c.status) = LOWER(:status)
+            """)
+    java.util.List<Customer> findByStatus(String status);
+}
+'''
+    assert len(detect_jpql(src)) == 1
+
+
+def test_jpql_same_file_identifier_concat_flagged():
+    src = '''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface CustomerRepository {
+    String QUERY = "SELECT c FROM Customer c ";
+    String WHERE = "WHERE (:status IS NULL OR LOWER(c.status) = LOWER(:status))";
+
+    @Query(QUERY + "WHERE (:status IS NULL OR LOWER(c.status) = LOWER(:status))")
+    java.util.List<Customer> findByStatus(String status);
+
+    @Query(QUERY + WHERE)
+    java.util.List<Customer> findByStatusAgain(String status);
+}
+'''
+    assert len(detect_jpql(src)) == 2
+
+
+def test_jpql_cross_file_constants_flagged(tmp_path):
+    repo = tmp_path / "src" / "main" / "java" / "example" / "repo"
+    repo.mkdir(parents=True)
+    (repo / "Queries.java").write_text('''
+package example.repo;
+public final class Queries {
+    public static final String WHERE =
+            "WHERE (:status IS NULL OR LOWER(c.status) = LOWER(:status))";
+}
+'''.strip(), encoding="utf-8")
+    path = repo / "CustomerRepository.java"
+    path.write_text('''
+package example.repo;
+import org.springframework.data.jpa.repository.Query;
+public interface CustomerRepository {
+    String QUERY = "SELECT c FROM Customer c ";
+
+    @Query(Queries.WHERE)
+    java.util.List<Customer> findByStatus(String status);
+
+    @Query(QUERY + Queries.WHERE)
+    java.util.List<Customer> findByStatusAgain(String status);
+}
+'''.strip(), encoding="utf-8")
+    findings = detect_jpql(path.read_text(encoding="utf-8"), filename=str(path))
+    assert len(findings) == 2
+    assert all(item.rule_id == JPQL_ID for item in findings)
+
+
+def test_jpql_test_file_skipped():
+    assert detect_jpql(BAD_JPQL, filename="InvoiceRepositoryTest.java") == []
+    assert len(detect_jpql(BAD_JPQL, filename="InvoiceRepository.java")) >= 1
+
+
+@pytest.mark.parametrize(
+    "src",
+    NEAR_MISS_JPQL,
+    ids=["empty-sentinel", "null-or-without-lower", "lower-without-null-or"],
+)
+def test_jpql_good_and_near_misses_pass(src):
+    assert detect_jpql(src) == []
 
 
 # ---------- java.jpa.no-query-string-concatenation ----------
@@ -1134,4 +1280,113 @@ public interface GhostRepository extends JpaRepository<Ghost, Long> {
 )
 def test_n1_good_and_near_misses_pass(src):
     assert detect_n1(src) == []
+
+
+# ---------- java.reliability.no-after-commit-dispatch-from-after-commit-listener ----------
+
+BAD_AFTER_COMMIT = [
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
+class InvoicePaidListener {
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onPaid(InvoicePaidEvent event) {
+        sideEffectExecutor.dispatchAfterCommitCoalescing(
+            "invoice-paid", () -> notifier.send(event.id()));
+    }
+}
+''',
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+class InvoicePaidListener {
+    @TransactionalEventListener
+    void onPaid(InvoicePaidEvent event) {
+        scheduler.scheduleAfterCommit(() -> notifier.send(event.id()));
+    }
+}
+''',
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+class InvoicePaidListener {
+    @TransactionalEventListener
+    void onPaid(InvoicePaidEvent event) {
+        TransactionSynchronizationManager.registerSynchronization(sync);
+    }
+}
+''',
+]
+
+NEAR_MISS_AFTER_COMMIT = [
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
+class InvoicePaidListener {
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    void onPaid(InvoicePaidEvent event) {
+        notifier.send(event.id());
+    }
+}
+''',
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
+class InvoicePaidListener {
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    void onPaid(InvoicePaidEvent event) {
+        sideEffectExecutor.dispatchAfterCommitCoalescing(
+            "invoice-paid", () -> notifier.send(event.id()));
+    }
+}
+''',
+    '''
+package example.billing;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
+class InvoicePaidListener {
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
+    void onPaid(InvoicePaidEvent event) {
+        scheduler.scheduleAfterCommit(() -> notifier.send(event.id()));
+    }
+}
+''',
+    '''
+package example.billing;
+class InvoicePaidListener {
+    void onPaid(InvoicePaidEvent event) {
+        sideEffectExecutor.dispatchAfterCommitCoalescing(
+            "invoice-paid", () -> notifier.send(event.id()));
+    }
+}
+''',
+]
+
+
+@pytest.mark.parametrize(
+    "src",
+    BAD_AFTER_COMMIT,
+    ids=["dispatchAfterCommit", "scheduleAfterCommit", "registerSynchronization"],
+)
+def test_after_commit_dispatch_bad_is_flagged(src):
+    hits = detect_after_commit(src)
+    assert len(hits) >= 1
+    assert hits[0].rule_id == AFTER_COMMIT_ID
+
+
+@pytest.mark.parametrize(
+    "src",
+    NEAR_MISS_AFTER_COMMIT,
+    ids=["direct-send", "before-commit", "after-rollback", "no-listener"],
+)
+def test_after_commit_dispatch_near_misses_pass(src):
+    assert detect_after_commit(src) == []
+
+
+def test_after_commit_dispatch_test_file_skipped():
+    assert detect_after_commit(BAD_AFTER_COMMIT[0], filename="ListenerTest.java") == []
 

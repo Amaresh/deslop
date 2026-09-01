@@ -4,24 +4,37 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from stats import Candidate, Evidence
-from walk import discover
+from stats import Candidate, Evidence, should_emit
+from walk import discover, rel_to_repo
 
 STACK = "ts"
+_REPO_ROOT: Path | None = None
 
 _FETCH_RE = re.compile(r"\bfetch\s*\(")
 _ABORT_RE = re.compile(r"\b(AbortController|AbortSignal\.timeout)")
 _ASYNC_CALL_RE = re.compile(r"\b(await\s+\w|\.then\s*\()")
-_EMPTY_CATCH_RE = re.compile(
-    r"catch\s*(?:\([^)]*\))?\s*\{[\s\n]*(?://[^\n]*[\s\n]*)*\}")
+_CATCH_OPEN_RE = re.compile(r"\bcatch\s*(?:\([^)]*\))?\s*\{")
 
 
 def _evidence(path: Path, line: int, excerpt: str) -> Evidence:
-    return Evidence(file=str(path), line=line, excerpt=excerpt[:120])
+    return Evidence(
+        file=rel_to_repo(path, _REPO_ROOT),
+        line=line,
+        excerpt=excerpt[:120],
+    )
+
+
+def _catch_is_empty(body: str) -> bool:
+    stripped = re.sub(r"//[^\n]*", "", body)
+    stripped = re.sub(r"/\*.*?\*/", "", stripped, flags=re.DOTALL)
+    return stripped.strip() == ""
 
 
 def _floating_promises(files: list[Path]) -> Candidate:
-    """Async calls should be awaited or handled."""
+    """Async calls should be awaited or handled.
+
+    Regex-only; not emitted from analyze() until TS facts exist.
+    """
     matched, total, ev = 0, 0, []
     for f in files:
         lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
@@ -82,16 +95,31 @@ def _fetch_without_timeout(files: list[Path]) -> Candidate:
 
 
 def _empty_catches(files: list[Path]) -> Candidate:
-    """catch blocks should not be empty."""
+    """catch blocks should not be empty.
+
+    total = catch blocks, matched = non-empty handlers (adoption).
+    """
     matched, total, ev = 0, 0, []
     for f in files:
         text = f.read_text(encoding="utf-8", errors="ignore")
-        for m in _EMPTY_CATCH_RE.finditer(text):
+        for m in _CATCH_OPEN_RE.finditer(text):
+            start = m.end()
+            depth = 1
+            idx = start
+            while depth > 0 and idx < len(text):
+                if text[idx] == "{":
+                    depth += 1
+                elif text[idx] == "}":
+                    depth -= 1
+                idx += 1
+            body = text[start:idx - 1] if idx > start else ""
             total += 1
-            matched += 1
-            if len(ev) < 6:
+            if not _catch_is_empty(body):
+                matched += 1
+            elif len(ev) < 6:
                 line = text[:m.start()].count("\n") + 1
-                ev.append(_evidence(f, line, m.group(0).replace("\n", " ")[:80]))
+                ev.append(_evidence(
+                    f, line, m.group(0).replace("\n", " ")[:80]))
     return Candidate(
         rule_id="typescript.errors.no-empty-catch",
         stack=STACK,
@@ -168,19 +196,25 @@ def _effect_cleanup(files: list[Path]) -> Candidate:
 
 
 def analyze(repo_root: str | Path) -> list[Candidate]:
-    files = discover(repo_root, "ts")
-    if not files:
-        return []
-    checks = [
-        _floating_promises,
-        _fetch_without_timeout,
-        _empty_catches,
-        _any_density,
-        _effect_cleanup,
-    ]
-    out = []
-    for check in checks:
-        c = check(files)
-        if c.total >= 3 and (c.ratio >= 0.8 or c.ratio <= 0.5):
-            out.append(c)
-    return out
+    global _REPO_ROOT
+    root = Path(repo_root)
+    _REPO_ROOT = root
+    try:
+        files = discover(root, "ts")
+        if not files:
+            return []
+        # _floating_promises is regex noise until TS facts exist — do not emit.
+        checks = [
+            _fetch_without_timeout,
+            _empty_catches,
+            _any_density,
+            _effect_cleanup,
+        ]
+        out = []
+        for check in checks:
+            c = check(files)
+            if should_emit(c):
+                out.append(c)
+        return out
+    finally:
+        _REPO_ROOT = None

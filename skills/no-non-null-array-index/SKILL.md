@@ -6,7 +6,8 @@ description: >-
   TypeScript with strict index access on arrays and records. Do not use for
   Map.get (already T | undefined), tuple types of known length, or literals
   where the index is provably in range.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

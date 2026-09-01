@@ -2,7 +2,8 @@
 name: no-eager-to-many-fetch
 description: >-
   Do not map OneToMany/ManyToMany as FetchType.EAGER. Use only when editing JPA entity associations. Do not use for to-one relations that are required for every read.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

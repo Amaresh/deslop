@@ -7,7 +7,8 @@ description: >-
   missing. Use only when editing Python configuration or settings code. Do not
   use for non-secret defaults like timeouts, URLs without credentials, or
   feature flags.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

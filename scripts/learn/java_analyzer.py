@@ -4,16 +4,46 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from stats import Candidate, Evidence
-from walk import discover
+from stats import Candidate, Evidence, should_emit
+from walk import discover, rel_to_repo
 
 STACK = "java"
+_REPO_ROOT: Path | None = None
 
 _HTTP_CLIENTS = ("RestTemplate", "WebClient", "FeignClient", "RestClient")
+_EXTERNAL_IO_TYPES = _HTTP_CLIENTS + (
+    "AmazonS3", "S3Client", "S3AsyncClient",
+    "MessagingClient", "KafkaTemplate", "JmsTemplate",
+)
+_HTTP_CALL_RE = re.compile(
+    r"\.(postForEntity|getForObject|getForEntity|exchange|putForEntity)\s*\("
+)
+_S3_CALL_RE = re.compile(
+    r"(?i)(?:amazon)?s3.*\.(putObject|getObject|upload)"
+)
+_MSG_CALL_RE = re.compile(
+    r"(?i)(messaging|kafka|jms).*\.(send|publish)\s*\("
+)
 
 
 def _evidence(path: Path, line: int, excerpt: str) -> Evidence:
-    return Evidence(file=str(path), line=line, excerpt=excerpt[:120])
+    return Evidence(
+        file=rel_to_repo(path, _REPO_ROOT),
+        line=line,
+        excerpt=excerpt[:120],
+    )
+
+
+def _line_has_external_io(line: str) -> bool:
+    if any(t in line for t in _EXTERNAL_IO_TYPES):
+        return True
+    if _HTTP_CALL_RE.search(line):
+        return True
+    if _S3_CALL_RE.search(line):
+        return True
+    if _MSG_CALL_RE.search(line):
+        return True
+    return False
 
 
 def _lines_of(files: list[Path]):
@@ -58,28 +88,46 @@ def _jpql_param_styles(files: list[Path]) -> Candidate:
 
 
 def _transactional_scope(files: list[Path]) -> Candidate:
-    """@Transactional methods should not do external IO."""
+    """@Transactional methods should not do external IO.
+
+    total = @Transactional methods, matched = those without HTTP/S3/messaging.
+    """
     matched, total, ev = 0, 0, []
     for f, lines in _lines_of(files):
-        in_txn = False
-        brace_depth = 0
-        for i, line in enumerate(lines, 1):
-            if "@Transactional" in line:
-                in_txn = True
-                brace_depth = 0
+        i = 0
+        n = len(lines)
+        while i < n:
+            line = lines[i]
+            if "@TransactionalEventListener" in line:
+                i += 1
                 continue
-            if in_txn:
-                brace_depth += line.count("{") - line.count("}")
-                if any(h in line for h in _HTTP_CLIENTS) or \
-                   re.search(r"\.(postForEntity|getForObject|exchange|put|delete)\(", line):
-                    total += 1
-                    matched += 1  # violation found
-                    if len(ev) < 6:
-                        ev.append(_evidence(f, i, line.strip()[:100]))
-                    in_txn = False
-                    continue
-                if brace_depth <= 0:
-                    in_txn = False
+            if "@Transactional" not in line:
+                i += 1
+                continue
+            total += 1
+            depth = line.count("{") - line.count("}")
+            seen_body = "{" in line
+            has_io = _line_has_external_io(line)
+            ev_line, ev_ex = i + 1, line.strip()[:100]
+            j = i + 1
+            while j < n:
+                body_line = lines[j]
+                depth += body_line.count("{") - body_line.count("}")
+                if "{" in body_line:
+                    seen_body = True
+                if _line_has_external_io(body_line):
+                    has_io = True
+                    ev_line, ev_ex = j + 1, body_line.strip()[:100]
+                if seen_body and depth <= 0:
+                    break
+                if not seen_body and body_line.strip().endswith(";"):
+                    break
+                j += 1
+            if not has_io:
+                matched += 1
+            elif len(ev) < 6:
+                ev.append(_evidence(f, ev_line, ev_ex))
+            i = j + 1 if j > i else i + 1
     return Candidate(
         rule_id="java.transactions.no-external-io",
         stack=STACK,
@@ -160,19 +208,25 @@ def _injection_style(files: list[Path]) -> Candidate:
 
 
 def analyze(repo_root: str | Path) -> list[Candidate]:
-    files = discover(repo_root, "java")
-    if not files:
-        return []
-    checks = [
-        _jpql_param_styles,
-        _transactional_scope,
-        _timeout_shaping,
-        _exception_hierarchy,
-        _injection_style,
-    ]
-    out = []
-    for check in checks:
-        c = check(files)
-        if c.total >= 3 and (c.ratio >= 0.8 or c.ratio <= 0.5):
-            out.append(c)
-    return out
+    global _REPO_ROOT
+    root = Path(repo_root)
+    _REPO_ROOT = root
+    try:
+        files = discover(root, "java")
+        if not files:
+            return []
+        checks = [
+            _jpql_param_styles,
+            _transactional_scope,
+            _timeout_shaping,
+            _exception_hierarchy,
+            _injection_style,
+        ]
+        out = []
+        for check in checks:
+            c = check(files)
+            if should_emit(c):
+                out.append(c)
+        return out
+    finally:
+        _REPO_ROOT = None

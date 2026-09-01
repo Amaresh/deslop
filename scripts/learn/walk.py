@@ -40,6 +40,34 @@ def is_skipped(path: Path) -> bool:
     return False
 
 
+def rel_to_repo(path: Path, repo_root: str | Path | None) -> str:
+    """Evidence `file` is relative to --repo; never an absolute home path."""
+    p = Path(path)
+    if repo_root is None:
+        return p.as_posix() if not p.is_absolute() else p.name
+    try:
+        return p.resolve().relative_to(Path(repo_root).resolve()).as_posix()
+    except ValueError:
+        return p.name
+
+
+def sample_rel_files(
+    files: list[Path], repo_root: str | Path, n: int = 30,
+) -> list[str]:
+    """Evenly spaced relative paths for the induce-prompt file list."""
+    rels = [rel_to_repo(f, repo_root) for f in files]
+    if len(rels) <= n:
+        return rels
+    if n <= 1:
+        return rels[:n]
+    idxs: list[int] = []
+    for i in range(n):
+        idx = round(i * (len(rels) - 1) / (n - 1))
+        if not idxs or idxs[-1] != idx:
+            idxs.append(idx)
+    return [rels[i] for i in idxs]
+
+
 def discover(repo_root: str | Path, lang: str,
              include_tests: bool = False) -> list[Path]:
     """All source files of `lang` in `repo_root`, sorted, skip-aware."""

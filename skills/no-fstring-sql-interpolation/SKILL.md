@@ -5,7 +5,8 @@ description: >-
   Use bound parameters. Use only when editing Python code that composes SQL or
   Cypher queries. Do not use for ORM query builders, identifiers assembled from
   a trusted allowlist, or non-SQL string templates.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

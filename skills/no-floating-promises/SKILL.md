@@ -5,7 +5,8 @@ description: >-
   .catch, void, or Promise.all. Use only when editing TypeScript/JavaScript
   call sites of async functions or promises. Do not use for Python coroutines,
   Java futures, or deliberate fire-and-forget with an attached error handler.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

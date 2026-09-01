@@ -2,7 +2,8 @@
 name: no-nullable-column-scanned-as-plain-value
 description: >-
   Do not Scan a nullable / outer-join column into a plain scalar. Use sql.Null* or a pointer. Use only when editing Go database/sql Scan calls. Do not use for non-nullable columns or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

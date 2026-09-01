@@ -4,7 +4,8 @@ description: >-
   Avoid JPQL `:param IS NULL OR` combined with LOWER on optional filters.
   Use only when editing Spring Data @Query methods or *Repository.java optional
   string filters. Do not use for general JPA, transactions, HTTP, or schedulers.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*Repository.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1
@@ -34,8 +35,8 @@ List<Invoice> findByStatus(String status);
 
 ## Enforce
 
-This skill does not block a merge. CI runs the pack checker:
+CI gates this rule (`enforcement: checker`):
 
 ```bash
-python scripts/check.py --repo-root . --rule java.reliability.no-jpql-null-or-lower-on-optional-filter
+stopthatslop check --repo-root . --pack java --rule java.reliability.no-jpql-null-or-lower-on-optional-filter
 ```

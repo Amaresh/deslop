@@ -10,7 +10,14 @@ from pathlib import Path
 from check import main as check_main
 from export import export_pack
 from install import install, rollback
-from pack_lib import PACK_INDEX_NAME, PACK_ROOT, load_all_packs, load_pack, pack_frameworks
+from pack_lib import (
+    PACK_INDEX_NAME,
+    PACK_ROOT,
+    load_all_packs,
+    load_pack_by_id,
+    pack_folder_name,
+    pack_frameworks,
+)
 
 
 def _add_check_args(parser: argparse.ArgumentParser) -> None:
@@ -25,8 +32,17 @@ def _add_check_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--changed-file", action="append", default=[])
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument("--report-collisions", action="store_true")
-    parser.add_argument("--fail-on-teach-only", action="store_true")
     parser.add_argument("--override-file", type=Path)
+
+
+def _add_install_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--target", type=Path, required=True)
+    parser.add_argument(
+        "--pack",
+        required=True,
+        help="Pack alias (java, python, ts, go, android) or pack id.",
+    )
+    parser.add_argument("--force", action="store_true")
 
 
 def _review() -> int:
@@ -68,15 +84,28 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("review", help="Print skills and enforcement for human accept/reject")
 
     install_p = sub.add_parser("install", help="Install pack-index into a repo")
-    install_p.add_argument("--target", type=Path, required=True)
-    install_p.add_argument("--force", action="store_true")
+    _add_install_args(install_p)
+    install_p.add_argument(
+        "--write-agents-md",
+        action="store_true",
+        help="Append a one-line pointer to AGENTS.md (never a fat generated file).",
+    )
 
     update_p = sub.add_parser("update", help="Re-install current pack (snapshots previous)")
-    update_p.add_argument("--target", type=Path, required=True)
-    update_p.add_argument("--force", action="store_true")
+    _add_install_args(update_p)
+    update_p.add_argument(
+        "--write-agents-md",
+        action="store_true",
+        help="Append a one-line pointer to AGENTS.md (never a fat generated file).",
+    )
 
     rollback_p = sub.add_parser("rollback", help="Restore last installed snapshot")
     rollback_p.add_argument("--target", type=Path, required=True)
+    rollback_p.add_argument(
+        "--pack",
+        required=True,
+        help="Pack alias (java, python, ts, go, android) or pack id.",
+    )
 
     check_p = sub.add_parser("check", help="Run checker; exit 1 on checker findings")
     _add_check_args(check_p)
@@ -92,11 +121,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "review":
         return _review()
     if args.cmd in {"install", "update"}:
-        written, _hits = install(target=args.target, force=args.force)
-        print(f"Installed {len(written)} files (pack-index {PACK_INDEX_NAME})")
+        written, _hits = install(
+            target=args.target,
+            pack=args.pack,
+            force=args.force,
+            write_agents_md=args.write_agents_md,
+        )
+        folder = pack_folder_name(load_pack_by_id(args.pack))
+        print(f"Installed {len(written)} files (pack-index {folder})")
         return 0
     if args.cmd == "rollback":
-        restored = rollback(target=args.target)
+        restored = rollback(target=args.target, pack=args.pack)
         print(f"Rolled back to snapshot at {restored[0]}")
         return 0
     if args.cmd == "check":
@@ -115,8 +150,6 @@ def main(argv: list[str] | None = None) -> int:
             sys.argv.extend(["--changed-file", str(path)])
         if args.report_collisions:
             sys.argv.append("--report-collisions")
-        if args.fail_on_teach_only:
-            sys.argv.append("--fail-on-teach-only")
         if args.override_file is not None:
             sys.argv.extend(["--override-file", str(args.override_file)])
         return check_main()

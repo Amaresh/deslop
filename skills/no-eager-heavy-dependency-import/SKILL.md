@@ -2,7 +2,8 @@
 name: no-eager-heavy-dependency-import
 description: >-
   Do not statically import lodash, moment, or similar heavy packages at module top level. Dynamic-import them on the path that needs them. Use only when editing TS/JS modules. Do not use for types-only imports or already-lazy routes.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.{ts,tsx}'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

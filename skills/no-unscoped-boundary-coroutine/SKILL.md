@@ -2,7 +2,8 @@
 name: no-unscoped-boundary-coroutine
 description: >-
   Do not launch GlobalScope coroutines from composables, ViewModels, or Activities. Use viewModelScope / lifecycleScope. Use only when editing Kotlin Android UI. Do not use for process-wide daemons started in Application.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.kt'
 license: MIT
 metadata:
   pack: stopthatslop-android-v1

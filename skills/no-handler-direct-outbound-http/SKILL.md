@@ -2,7 +2,8 @@
 name: no-handler-direct-outbound-http
 description: >-
   Do not call http.Get/Post/Head or client.Do from an HTTP handler. Inject a client. Use only when editing Go HTTP handlers. Do not use for dedicated HTTP client packages.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

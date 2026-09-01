@@ -2,7 +2,8 @@
 name: no-request-layer-outbound-client-construction
 description: >-
   Do not construct httpx.Client/AsyncClient or requests.Session inside a route handler. Inject a shared client from lifespan. Use only when editing Python route functions. Do not use for scripts, workers, or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

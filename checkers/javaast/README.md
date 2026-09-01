@@ -32,8 +32,10 @@ Language level is Java 21 (`ParserConfiguration.setLanguageLevel`).
 
 ## Output schema
 
-Top level: `file`, `classes`, `methods`, `annotations`, `string_concats`.
-Extra (detectors may use): `fields`, per-method `owner` / `assigns`.
+Top level: `file`, `classes`, `methods`, `annotations`, `string_concats`,
+`string_constants`. Extra (detectors may use): `fields`, per-method `owner` /
+`assigns`. `@Query` members may include `value_resolved` when the expression
+is a string literal, text block, or concat of those.
 
 `news.chained` is the builder method names after `new X()` or `X.builder()` /
 `X.create()`. `string_concats` sets `in_query_ann` / `in_create_query` from

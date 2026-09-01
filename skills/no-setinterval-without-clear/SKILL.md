@@ -6,7 +6,8 @@ description: >-
   TypeScript/JavaScript timers in components or long-lived objects. Do not use
   for setTimeout one-shots without cancellation needs, worker threads, or
   cron-style schedulers with their own lifecycle.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

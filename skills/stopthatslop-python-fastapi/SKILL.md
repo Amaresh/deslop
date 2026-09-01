@@ -4,7 +4,8 @@ description: >-
   FastAPI/Pydantic architecture pack. Use when editing Python async route
   handlers, Pydantic models, httpx clients, or app settings. One pack, several
   invariants. Apply only the section that matches the files in scope.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

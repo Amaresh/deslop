@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce packs: Java engine rules plus portable AST checkers."""
+"""Enforce packs: portable AST checkers."""
 
 from __future__ import annotations
 
@@ -15,23 +15,18 @@ from pack_lib import (
     checker_rule_ids,
     check_rule_ids,
     collision_hits,
-    engine_rule_ids,
+    detect_java_frameworks,
     format_collision_report,
     load_all_packs,
     load_pack,
     load_pack_by_id,
     mine_rule_ids,
     pack_frameworks,
-    prefer_engine_src,
     skill_enforcement_map,
     teach_only_rule_ids,
 )
 
-prefer_engine_src()
 sys.path.insert(0, str(PACK_ROOT / "checkers"))
-
-from engineering_rules.engine import RulesEngine  # noqa: E402
-from engineering_rules.models import ExecutionMode, RunSource  # noqa: E402
 
 from run import CheckFinding, run_mine  # noqa: E402
 
@@ -41,6 +36,22 @@ class CombinedResult:
     findings: tuple[Any, ...]
     coverage: Any = None
     repo_profile: Any = None
+
+
+@dataclass
+class CoverageInfo:
+    repo_frameworks: tuple[str, ...] = ()
+    applicable_count: int = 0
+    suppressed_count: int = 0
+    uncovered_frameworks: tuple[str, ...] = ()
+
+    def model_dump(self, mode: str = "json") -> dict[str, Any]:
+        return {
+            "repo_frameworks": list(self.repo_frameworks),
+            "applicable_count": self.applicable_count,
+            "suppressed_count": self.suppressed_count,
+            "uncovered_frameworks": list(self.uncovered_frameworks),
+        }
 
 
 def _parse_args() -> argparse.Namespace:
@@ -72,11 +83,6 @@ def _parse_args() -> argparse.Namespace:
         "--report-collisions",
         action="store_true",
         help="Include agent-instruction collision markers under --repo-root.",
-    )
-    parser.add_argument(
-        "--fail-on-teach-only",
-        action="store_true",
-        help="Also exit 1 on teach-only findings. Default: gate checker rules only.",
     )
     parser.add_argument(
         "--override-file",
@@ -155,11 +161,6 @@ def run_check(
     allowed_unique = tuple(dict.fromkeys(allowed))
     selected = tuple(rule_ids) if rule_ids else allowed_unique
 
-    engine_ids = [
-        rid
-        for rid in selected
-        if any(rid in engine_rule_ids(pack) for pack in selected_packs)
-    ]
     mine_ids = [
         rid
         for rid in selected
@@ -169,19 +170,22 @@ def run_check(
     findings: list[Any] = []
     coverage = None
     repo_profile = None
-    if engine_ids:
-        mode = ExecutionMode.DIFF if changed_files else ExecutionMode.INVENTORY
-        engine_result = RulesEngine().run(
-            repo_root=repo_root,
-            mode=mode,
-            source=RunSource.LOCAL,
-            changed_files=changed_files or None,
-            selected_rule_ids=tuple(engine_ids),
-            override_path=override_path,
+    if any(str(pack.get("lang") or "") == "java" for pack in selected_packs):
+        detected = detect_java_frameworks(repo_root, override_path)
+        required: list[str] = []
+        for pack in selected_packs:
+            if str(pack.get("lang") or "") == "java":
+                required.extend(pack_frameworks(pack))
+        detected_l = {item.lower() for item in detected}
+        uncovered = tuple(
+            name for name in dict.fromkeys(required) if name.lower() not in detected_l
         )
-        findings.extend(engine_result.findings)
-        coverage = getattr(engine_result, "coverage", None)
-        repo_profile = getattr(engine_result, "repo_profile", None)
+        coverage = CoverageInfo(
+            repo_frameworks=tuple(sorted(detected, key=str.lower)),
+            applicable_count=len(selected),
+            suppressed_count=0,
+            uncovered_frameworks=uncovered,
+        )
     if mine_ids:
         findings.extend(
             run_mine(
@@ -232,7 +236,6 @@ def build_report(
     selected: list[str],
     result: Any,
     report_collisions: bool,
-    fail_on_teach_only: bool,
 ) -> dict[str, Any]:
     enforcement = _merge_enforcement(packs)
     findings = [finding for finding in result.findings if not finding.waived]
@@ -251,7 +254,7 @@ def build_report(
     ]
     not_covered = [rule_id for rule_id in selected if rule_id in teach_ids]
     collisions = collision_hits(repo_root) if report_collisions else ()
-    blocking = findings if fail_on_teach_only else gate_findings
+    blocking = gate_findings
     required: list[str] = []
     for pack in packs:
         required.extend(pack_frameworks(pack))
@@ -344,13 +347,15 @@ def main() -> int:
     except FileNotFoundError as exc:
         print(str(exc), file=sys.stderr)
         return 2
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     report = build_report(
         packs=packs,
         repo_root=args.repo_root,
         selected=selected,
         result=result,
         report_collisions=args.report_collisions,
-        fail_on_teach_only=args.fail_on_teach_only,
     )
 
     if args.format == "json":

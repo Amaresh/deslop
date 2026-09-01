@@ -4,7 +4,8 @@ description: >-
   Do not construct httpx.AsyncClient (or requests.Session) without an explicit
   timeout. Use only when editing Python HTTP client construction. Do not use
   for route handlers, retry policy design, or non-HTTP IO.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

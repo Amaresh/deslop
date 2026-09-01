@@ -4,7 +4,8 @@ description: >-
   Do not call HTTP, S3, or messaging clients from a @Transactional service method.
   Use only when a Java *Service.java method is annotated @Transactional and performs
   outbound IO. Do not use for RestTemplate construction, JPQL, or schedulers.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*Service.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

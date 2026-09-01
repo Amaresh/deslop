@@ -5,7 +5,8 @@ description: >-
   exception and log, return an error value, or re-raise. Use only when editing
   Python try/except blocks. Do not use for Java, TypeScript catch blocks, or
   for deliberate no-op fallbacks that carry a comment and a narrow exception.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

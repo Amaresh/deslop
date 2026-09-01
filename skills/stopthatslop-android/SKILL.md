@@ -4,7 +4,8 @@ description: >-
   Android / Compose reliability pack. Use when editing Kotlin composables,
   ViewModels, or Activities. One pack, several invariants. Apply only the
   section that matches the files in scope.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.kt'
 license: MIT
 metadata:
   pack: stopthatslop-android-v1

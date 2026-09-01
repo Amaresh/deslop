@@ -2,7 +2,8 @@
 name: no-dynamic-sql-execution
 description: >-
   Do not execute SQL built with f-strings, format, or concatenation. Use bound parameters. Use only when editing Python DB calls. Do not use for migrations, test fixtures, or query-builder APIs that are not execute.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

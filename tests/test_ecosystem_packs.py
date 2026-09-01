@@ -14,6 +14,9 @@ from pack_lib import (
     load_pack,
     load_pack_by_id,
     mine_rule_ids,
+    pack_folder_name,
+    pack_glob_union,
+    parse_skill_frontmatter,
 )
 
 ECOSYSTEM_PACK_IDS = {
@@ -30,8 +33,8 @@ def test_ecosystem_packs_declare_pack_yaml() -> None:
         assert path in all_pack_yamls()
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["pack_id"] == expected_id
-        assert data["invocation"] == "explicit"
-        assert "install_namespace" not in data
+        assert data["invocation"] == "model"
+        assert data["install_namespace"] == "stopthatslop"
         assert "collisions" not in data
         assert data["engine"]["rule_ids"] == []
         assert mine_rule_ids(data)
@@ -43,7 +46,7 @@ def test_python_and_ts_keep_some_teach_only() -> None:
     assert {s["enforcement"] for s in python["skills"]} == {"checker", "teach-only"}
     assert {s["enforcement"] for s in ts_pack["skills"]} == {"checker", "teach-only"}
     assert len(mine_rule_ids(python)) == 8
-    assert len(mine_rule_ids(ts_pack)) == 8
+    assert len(mine_rule_ids(ts_pack)) == 9
 
 
 def test_go_and_android_are_all_checkers() -> None:
@@ -65,7 +68,21 @@ def test_ecosystem_skill_dirs_belong_to_their_pack() -> None:
             assert metadata["pack"] == pack_id
             assert metadata.get("kind") != "pack-index"
             assert "do not use for" in frontmatter["description"].lower()
-            assert frontmatter["disable-model-invocation"] is True
+            assert frontmatter.get("disable-model-invocation") is not True
+
+
+def test_pack_index_skills_use_union_paths() -> None:
+    assert load_pack()["invocation"] == "model"
+    for pack in load_all_packs():
+        skill_dir = SKILLS_ROOT / pack_folder_name(pack)
+        frontmatter = parse_skill_frontmatter(skill_dir)
+        assert frontmatter.get("disable-model-invocation") is not True
+        union = pack_glob_union(pack)
+        paths = frontmatter.get("paths")
+        if len(union) == 1:
+            assert paths == union[0]
+        else:
+            assert list(paths) == list(union)
 
 
 def test_java_tooling_stays_scoped_to_java_pack() -> None:

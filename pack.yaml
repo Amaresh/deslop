@@ -1,17 +1,18 @@
 pack_id: stopthatslop-java-spring-v1
 version: "0.3.0"
-invocation: explicit
+invocation: model
 install_namespace: stopthatslop
 lang: java
 
+# G0.3: check uses checkers/ only. Do not reintroduce a house RulesEngine here.
 engine:
+  rule_ids: []
+
+mine:
   rule_ids:
     - java.reliability.no-jpql-null-or-lower-on-optional-filter
     - java.architecture.no-service-layer-transactional-external-io
     - java.architecture.no-service-layer-rest-template-without-timeout-shaping
-
-mine:
-  rule_ids:
     - java.performance.no-n-plus-one-without-entity-graph
     - java.jpa.no-query-string-concatenation
     - java.correctness.no-file-upload-without-validation
@@ -20,6 +21,7 @@ mine:
     - java.performance.no-eager-to-many-fetch
     - java.architecture.no-controller-direct-repository-access
     - java.reliability.no-unbounded-findall-without-pagination
+    - java.reliability.no-after-commit-dispatch-from-after-commit-listener
 
 frameworks:
   - spring
@@ -75,5 +77,9 @@ skills:
     enforcement: checker
   - name: no-unbounded-findall-without-pagination
     rule_id: java.reliability.no-unbounded-findall-without-pagination
+    globs: "**/*.java"
+    enforcement: checker
+  - name: no-after-commit-dispatch-from-after-commit-listener
+    rule_id: java.reliability.no-after-commit-dispatch-from-after-commit-listener
     globs: "**/*.java"
     enforcement: checker

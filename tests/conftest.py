@@ -5,10 +5,12 @@ from pathlib import Path
 
 PACK_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = PACK_ROOT / "scripts"
-ENGINE_SRC = PACK_ROOT / "src"
+SRC = PACK_ROOT / "src"
 
 
 def _prefer(path: Path) -> None:
+    if not path.is_dir():
+        return
     rendered = str(path)
     try:
         sys.path.remove(rendered)
@@ -17,5 +19,5 @@ def _prefer(path: Path) -> None:
     sys.path.insert(0, rendered)
 
 
-_prefer(ENGINE_SRC)
+_prefer(SRC)
 _prefer(SCRIPTS)

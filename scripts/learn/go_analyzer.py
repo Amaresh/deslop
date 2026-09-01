@@ -12,8 +12,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from stats import Candidate, Evidence
-from walk import discover
+from stats import Candidate, Evidence, should_emit
+from walk import discover, rel_to_repo
 
 _GOAST_BIN = (
     Path(__file__).resolve().parent / "goast" / "goast-facts"
@@ -34,6 +34,7 @@ def _ensure_goast_bin() -> Path:
     return _GOAST_BIN
 
 STACK = "go"
+_REPO_ROOT: Path | None = None
 
 
 def _facts_for(path: Path) -> dict | None:
@@ -49,7 +50,11 @@ def _facts_for(path: Path) -> dict | None:
 
 
 def _evidence(path: Path, line: int, excerpt: str) -> Evidence:
-    return Evidence(file=str(path), line=line, excerpt=excerpt[:120])
+    return Evidence(
+        file=rel_to_repo(path, _REPO_ROOT),
+        line=line,
+        excerpt=excerpt[:120],
+    )
 
 
 def _fmt_ratio(matched: int, total: int) -> float:
@@ -202,19 +207,25 @@ def _sentinel_error_convention(files: list[Path]) -> Candidate:
 
 
 def analyze(repo_root: str | Path) -> list[Candidate]:
-    files = discover(repo_root, "go")
-    if not files:
-        return []
-    checks = [
-        _ctx_first_convention,
-        _error_wrap_convention,
-        _defer_close_convention,
-        _http_timeout_convention,
-        _sentinel_error_convention,
-    ]
-    out = []
-    for check in checks:
-        c = check(files)
-        if c.total >= 3 and (c.ratio >= 0.8 or c.ratio <= 0.5):
-            out.append(c)
-    return out
+    global _REPO_ROOT
+    root = Path(repo_root)
+    _REPO_ROOT = root
+    try:
+        files = discover(root, "go")
+        if not files:
+            return []
+        checks = [
+            _ctx_first_convention,
+            _error_wrap_convention,
+            _defer_close_convention,
+            _http_timeout_convention,
+            _sentinel_error_convention,
+        ]
+        out = []
+        for check in checks:
+            c = check(files)
+            if should_emit(c):
+                out.append(c)
+        return out
+    finally:
+        _REPO_ROOT = None

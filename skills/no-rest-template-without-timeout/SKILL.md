@@ -4,7 +4,8 @@ description: >-
   Do not construct RestTemplate in a Java service without request-factory timeout
   shaping. Use only when editing new RestTemplate() in *Service.java. Do not use
   for @Transactional IO, JPQL, listeners, or schedulers.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*Service.java'
 license: MIT
 metadata:
   pack: stopthatslop-java-spring-v1

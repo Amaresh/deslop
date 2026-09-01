@@ -2,7 +2,8 @@
 name: no-handler-rooted-background-context
 description: >-
   Do not pass context.Background() from an HTTP handler. Use r.Context(). Use only when editing Go HTTP handlers. Do not use for process startup or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

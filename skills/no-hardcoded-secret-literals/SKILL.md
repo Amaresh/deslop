@@ -2,7 +2,8 @@
 name: no-hardcoded-secret-literals
 description: >-
   Do not embed API keys, tokens, or passwords as Kotlin string literals. Read them from BuildConfig/local properties. Use only when editing Kotlin app code. Do not use for tests or placeholder empty strings.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.kt'
 license: MIT
 metadata:
   pack: stopthatslop-android-v1

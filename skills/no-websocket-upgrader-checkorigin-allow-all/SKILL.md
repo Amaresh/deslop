@@ -2,7 +2,8 @@
 name: no-websocket-upgrader-checkorigin-allow-all
 description: >-
   Do not set websocket.Upgrader CheckOrigin to a function that always returns true. Use only when editing Go websocket upgraders. Do not use for tests that intentionally allow all origins.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

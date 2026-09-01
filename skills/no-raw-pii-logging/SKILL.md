@@ -2,7 +2,8 @@
 name: no-raw-pii-logging
 description: >-
   Do not log email, phone, or similar PII fields in plaintext. Use only when editing Python logging calls. Do not use for audit trails that are required to store the value, or test doubles.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

@@ -5,7 +5,8 @@ description: >-
   type). Declare the response shape so internal fields cannot leak. Use only
   when editing FastAPI route decorators. Do not use for non-FastAPI frameworks,
   websockets, or raw Response returns with a documented reason.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1

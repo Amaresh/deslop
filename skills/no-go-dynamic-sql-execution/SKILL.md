@@ -2,7 +2,8 @@
 name: no-go-dynamic-sql-execution
 description: >-
   Do not execute SQL built with fmt.Sprintf or concatenation. Use bound parameters. Use only when editing Go Query/Exec calls. Do not use for migrations or tests.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.go'
 license: MIT
 metadata:
   pack: stopthatslop-go-v1

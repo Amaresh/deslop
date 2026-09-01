@@ -6,7 +6,8 @@ description: >-
   that parses untrusted JSON. Do not use for JSON.parse on literals you wrote,
   build-time config you control, or after a content-type check that already
   guarantees validity.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.ts'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1

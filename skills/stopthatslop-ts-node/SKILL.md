@@ -4,7 +4,12 @@ description: >-
   TypeScript/Node/React architecture pack. Use when editing TypeScript async
   code, Express handlers, env access, React form inputs, or timers. One pack,
   several invariants. Apply only the section that matches the files in scope.
-disable-model-invocation: true
+disable-model-invocation: false
+paths:
+- '**/*.ts'
+- '**/*.tsx'
+- '**/*.{ts,tsx}'
+- '**/*.{ts,tsx,js,jsx}'
 license: MIT
 metadata:
   pack: stopthatslop-ts-node-v1
@@ -15,9 +20,10 @@ metadata:
 
 Do not apply every section. Match the file in front of you.
 
-Eight rules are CI-gated (`enforcement: checker`): fetch abort timeout, empty
+Nine rules are CI-gated (`enforcement: checker`): fetch abort timeout, empty
 Express catch, unguarded `JSON.parse`, mixed controlled inputs, unvalidated
-href, orphaned effect timers, eager heavy imports, and `||` numeric defaults.
+href, orphaned effect timers, eager heavy imports, `||` numeric defaults, and
+Node builtins in `'use client'` modules.
 Needs Node so `stopthatslop check` can run the TypeScript parser. The rest of this
 pack is still teach-only.
 
@@ -54,3 +60,8 @@ Give every input both `value` and `onChange`, or neither plus a ref. Never mix.
 
 Store the handle and clear it in the cleanup path. Effect `setTimeout` without
 cleanup is a separate gated rule (`no-orphaned-effect-timeouts`).
+
+## Client Components (`'use client'`)
+
+Do not import `node:fs`, `path`, `child_process`, or other Node builtins.
+Those stay in a server module.

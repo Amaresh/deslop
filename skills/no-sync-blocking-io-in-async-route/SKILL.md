@@ -5,7 +5,8 @@ description: >-
   an async def FastAPI route. Use only when editing Python async route handlers
   or functions awaited from them. Do not use for sync (def) routes, background
   workers, or CLI scripts.
-disable-model-invocation: true
+disable-model-invocation: false
+paths: '**/*.py'
 license: MIT
 metadata:
   pack: stopthatslop-python-fastapi-v1
